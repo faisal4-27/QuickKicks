@@ -1,0 +1,35 @@
+{
+  "name": "quickkicks",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "services:up": "docker compose up -d",
+    "services:down": "docker compose down",
+    "services:reset": "docker compose down -v && docker compose up -d",
+    "migrate": "npm run migrate --workspace @quickkicks/server",
+    "seed": "npm run seed --workspace @quickkicks/server",
+    "setup": "npm run services:up && npm run migrate && npm run seed",
+    "dev": "concurrently -n server,web -c cyan,magenta \"npm:dev:server\" \"npm:dev:web\"",
+    "dev:server": "npm run dev --workspace @quickkicks/server",
+    "dev:web": "npm run dev --workspace @quickkicks/web",
+    "sim": "npm run sim --workspace @quickkicks/server",
+    "e2e": "npm run e2e --workspace @quickkicks/server",
+    "test": "vitest run",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "concurrently": "^9.1.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

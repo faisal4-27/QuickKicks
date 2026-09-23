@@ -1,0 +1,12 @@
+{
+  "name": "Palmer scores at 24' after an Enzo assist",
+  "events": [
+    { "minute": 1, "type": "period.start", "teamRef": "mock:team:che" },
+    { "minute": 8, "type": "pass.completed", "playerRef": "mock:che:enzo", "teamRef": "mock:team:che" },
+    { "minute": 24, "type": "assist", "playerRef": "mock:che:enzo", "teamRef": "mock:team:che" },
+    { "minute": 24, "type": "goal.scored", "playerRef": "mock:che:palmer", "teamRef": "mock:team:che" },
+    { "minute": 70, "type": "goal.scored", "playerRef": "mock:liv:salah", "teamRef": "mock:team:liv" },
+    { "minute": 90, "type": "clean_sheet.awarded", "playerRef": "mock:liv:alisson", "teamRef": "mock:team:liv" },
+    { "minute": 90, "type": "period.end", "teamRef": "mock:team:che" }
+  ]
+}

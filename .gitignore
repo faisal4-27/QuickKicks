@@ -70,6 +70,9 @@ web_modules/
 .env.*
 !.env.example
 
+# Local-machine docker compose overrides
+docker-compose.override.yml
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache

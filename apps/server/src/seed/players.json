@@ -1,0 +1,57 @@
+{
+  "fixture": {
+    "externalRef": "mock:fixture:che-liv",
+    "homeTeamRef": "mock:team:che",
+    "awayTeamRef": "mock:team:liv"
+  },
+  "teams": [
+    {
+      "externalRef": "mock:team:che",
+      "name": "Chelsea",
+      "shortName": "CHE",
+      "crestUrl": null,
+      "players": [
+        { "externalRef": "mock:che:sanchez", "fullName": "Robert Sanchez", "position": "GK", "shirtNumber": 1, "rating": 78, "starter": true },
+        { "externalRef": "mock:che:gusto", "fullName": "Malo Gusto", "position": "DEF", "shirtNumber": 27, "rating": 79, "starter": true },
+        { "externalRef": "mock:che:fofana", "fullName": "Wesley Fofana", "position": "DEF", "shirtNumber": 33, "rating": 81, "starter": true },
+        { "externalRef": "mock:che:colwill", "fullName": "Levi Colwill", "position": "DEF", "shirtNumber": 6, "rating": 82, "starter": true },
+        { "externalRef": "mock:che:cucurella", "fullName": "Marc Cucurella", "position": "DEF", "shirtNumber": 3, "rating": 82, "starter": true },
+        { "externalRef": "mock:che:caicedo", "fullName": "Moises Caicedo", "position": "MID", "shirtNumber": 25, "rating": 85, "starter": true },
+        { "externalRef": "mock:che:enzo", "fullName": "Enzo Fernandez", "position": "MID", "shirtNumber": 8, "rating": 84, "starter": true },
+        { "externalRef": "mock:che:palmer", "fullName": "Cole Palmer", "position": "MID", "shirtNumber": 20, "rating": 89, "starter": true },
+        { "externalRef": "mock:che:neto", "fullName": "Pedro Neto", "position": "FWD", "shirtNumber": 7, "rating": 81, "starter": true },
+        { "externalRef": "mock:che:jackson", "fullName": "Nicolas Jackson", "position": "FWD", "shirtNumber": 15, "rating": 80, "starter": true },
+        { "externalRef": "mock:che:madueke", "fullName": "Noni Madueke", "position": "FWD", "shirtNumber": 11, "rating": 79, "starter": true },
+        { "externalRef": "mock:che:jorgensen", "fullName": "Filip Jorgensen", "position": "GK", "shirtNumber": 12, "rating": 73, "starter": false },
+        { "externalRef": "mock:che:tosin", "fullName": "Tosin Adarabioyo", "position": "DEF", "shirtNumber": 4, "rating": 77, "starter": false },
+        { "externalRef": "mock:che:james", "fullName": "Reece James", "position": "DEF", "shirtNumber": 24, "rating": 83, "starter": false },
+        { "externalRef": "mock:che:lavia", "fullName": "Romeo Lavia", "position": "MID", "shirtNumber": 45, "rating": 78, "starter": false },
+        { "externalRef": "mock:che:nkunku", "fullName": "Christopher Nkunku", "position": "FWD", "shirtNumber": 18, "rating": 82, "starter": false }
+      ]
+    },
+    {
+      "externalRef": "mock:team:liv",
+      "name": "Liverpool",
+      "shortName": "LIV",
+      "crestUrl": null,
+      "players": [
+        { "externalRef": "mock:liv:alisson", "fullName": "Alisson Becker", "position": "GK", "shirtNumber": 1, "rating": 88, "starter": true },
+        { "externalRef": "mock:liv:taa", "fullName": "Trent Alexander-Arnold", "position": "DEF", "shirtNumber": 66, "rating": 86, "starter": true },
+        { "externalRef": "mock:liv:konate", "fullName": "Ibrahima Konate", "position": "DEF", "shirtNumber": 5, "rating": 84, "starter": true },
+        { "externalRef": "mock:liv:vandijk", "fullName": "Virgil van Dijk", "position": "DEF", "shirtNumber": 4, "rating": 89, "starter": true },
+        { "externalRef": "mock:liv:robertson", "fullName": "Andrew Robertson", "position": "DEF", "shirtNumber": 26, "rating": 83, "starter": true },
+        { "externalRef": "mock:liv:gravenberch", "fullName": "Ryan Gravenberch", "position": "MID", "shirtNumber": 38, "rating": 83, "starter": true },
+        { "externalRef": "mock:liv:macallister", "fullName": "Alexis Mac Allister", "position": "MID", "shirtNumber": 10, "rating": 85, "starter": true },
+        { "externalRef": "mock:liv:szoboszlai", "fullName": "Dominik Szoboszlai", "position": "MID", "shirtNumber": 8, "rating": 82, "starter": true },
+        { "externalRef": "mock:liv:salah", "fullName": "Mohamed Salah", "position": "FWD", "shirtNumber": 11, "rating": 91, "starter": true },
+        { "externalRef": "mock:liv:gakpo", "fullName": "Cody Gakpo", "position": "FWD", "shirtNumber": 18, "rating": 82, "starter": true },
+        { "externalRef": "mock:liv:diaz", "fullName": "Luis Diaz", "position": "FWD", "shirtNumber": 7, "rating": 84, "starter": true },
+        { "externalRef": "mock:liv:kelleher", "fullName": "Caoimhin Kelleher", "position": "GK", "shirtNumber": 62, "rating": 76, "starter": false },
+        { "externalRef": "mock:liv:gomez", "fullName": "Joe Gomez", "position": "DEF", "shirtNumber": 2, "rating": 79, "starter": false },
+        { "externalRef": "mock:liv:tsimikas", "fullName": "Konstantinos Tsimikas", "position": "DEF", "shirtNumber": 21, "rating": 76, "starter": false },
+        { "externalRef": "mock:liv:jones", "fullName": "Curtis Jones", "position": "MID", "shirtNumber": 17, "rating": 79, "starter": false },
+        { "externalRef": "mock:liv:nunez", "fullName": "Darwin Nunez", "position": "FWD", "shirtNumber": 9, "rating": 81, "starter": false }
+      ]
+    }
+  ]
+}
