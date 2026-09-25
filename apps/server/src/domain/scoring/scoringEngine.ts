@@ -51,7 +51,7 @@ export async function ingestEvent(
 
   const ownerId = player ? await currentOwner(ctx.roomId, player.id) : null;
   const activeKinds: PowerUpKind[] =
-    ownerId && player ? await activeKindsFor(ctx.roomId, ownerId, event.minute) : [];
+    ownerId && player ? await activeKindsFor(ctx.roomId, ownerId, player.id, event.minute) : [];
 
   const scored =
     player && isScoringEvent(event.type)
@@ -78,7 +78,9 @@ export async function ingestEvent(
 
     if (ownerId && player && scored.awardedPoints !== 0) {
       const powerUpId =
-        scored.multiplier > 1 ? await matchingPowerUpId(ctx.roomId, ownerId, event.minute) : null;
+        scored.multiplier > 1
+          ? await matchingPowerUpId(ctx.roomId, ownerId, player.id, event.minute)
+          : null;
       await tx.insert(scoreEntries).values({
         roomId: ctx.roomId,
         memberId: ownerId,
@@ -133,6 +135,7 @@ export async function ingestEvent(
 async function matchingPowerUpId(
   roomId: string,
   memberId: string,
+  playerId: string,
   minute: number,
 ): Promise<string | null> {
   const rows = await db
@@ -142,6 +145,7 @@ async function matchingPowerUpId(
       and(
         eq(powerUps.roomId, roomId),
         eq(powerUps.memberId, memberId),
+        eq(powerUps.playerId, playerId),
         eq(powerUps.status, 'active'),
         lte(powerUps.activatedAtMinute, minute),
         gt(powerUps.expiresAtMinute, minute),

@@ -61,6 +61,8 @@ export interface RosterEntryView {
 
 export interface PowerUpView {
   id: string;
+  /** The boosted player. */
+  playerId: string;
   kind: PowerUpKind;
   activatedAtMinute: number;
   expiresAtMinute: number;

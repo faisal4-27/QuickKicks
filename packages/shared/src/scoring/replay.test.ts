@@ -18,6 +18,11 @@ const positions: Record<string, Position> = {
 
 const rules = DEFAULT_SCORING_RULES;
 
+/** A 20'-30' boost, the window every power-up test below uses. */
+function boost(memberId: string, playerRef: string, kind: PowerUpWindow['kind']): PowerUpWindow {
+  return { memberId, playerRef, kind, fromMinute: 20, toMinute: 30 };
+}
+
 describe('ownerAt', () => {
   const stints: OwnershipStint[] = [
     { memberId: 'alice', playerRef: 'salah', fromMinute: 0, toMinute: 70 },
@@ -39,25 +44,26 @@ describe('ownerAt', () => {
 });
 
 describe('activeKindsAt', () => {
-  const windows: PowerUpWindow[] = [
-    { memberId: 'alice', kind: 'double_goals', fromMinute: 20, toMinute: 30 },
-  ];
+  const windows: PowerUpWindow[] = [boost('alice', 'salah', 'double_goals')];
 
   it('is inclusive of the activation minute and exclusive of the expiry minute', () => {
-    expect(activeKindsAt(windows, 'alice', 19)).toEqual([]);
-    expect(activeKindsAt(windows, 'alice', 20)).toEqual(['double_goals']);
-    expect(activeKindsAt(windows, 'alice', 29)).toEqual(['double_goals']);
-    expect(activeKindsAt(windows, 'alice', 30)).toEqual([]);
+    expect(activeKindsAt(windows, 'alice', 'salah', 19)).toEqual([]);
+    expect(activeKindsAt(windows, 'alice', 'salah', 20)).toEqual(['double_goals']);
+    expect(activeKindsAt(windows, 'alice', 'salah', 29)).toEqual(['double_goals']);
+    expect(activeKindsAt(windows, 'alice', 'salah', 30)).toEqual([]);
   });
 
   it('does not leak between managers', () => {
-    expect(activeKindsAt(windows, 'bob', 25)).toEqual([]);
+    expect(activeKindsAt(windows, 'bob', 'salah', 25)).toEqual([]);
+  });
+
+  it("does not leak onto the manager's other player", () => {
+    expect(activeKindsAt(windows, 'alice', 'palmer', 25)).toEqual([]);
   });
 });
 
 describe('replayLedger', () => {
   it('doubles a goal inside the power-up window and not outside it', () => {
-    // The scripted scenario the plan called for: a boost live from 20' to 30'.
     const events: ReplayEvent[] = [
       { minute: 15, type: 'goal.scored', playerRef: 'salah' },
       { minute: 24, type: 'goal.scored', playerRef: 'salah' },
@@ -67,13 +73,62 @@ describe('replayLedger', () => {
       events,
       positions,
       stints: [{ memberId: 'alice', playerRef: 'salah', fromMinute: 0, toMinute: null }],
-      powerUps: [{ memberId: 'alice', kind: 'double_goals', fromMinute: 20, toMinute: 30 }],
+      powerUps: [boost('alice', 'salah', 'double_goals')],
       rules,
     });
 
     expect(result.entries.map((e) => e.multiplier)).toEqual([1, 2, 1]);
-    // 9 + 18 + 9
-    expect(result.totals.alice).toBe(36);
+    // 180 + 360 + 180
+    expect(result.totals.alice).toBe(720);
+  });
+
+  it('boosts both players at once when each carries its own power-up', () => {
+    const result = replayLedger({
+      events: [
+        { minute: 25, type: 'goal.scored', playerRef: 'salah' },
+        { minute: 25, type: 'pass.completed', playerRef: 'palmer' },
+      ],
+      positions,
+      stints: [
+        { memberId: 'alice', playerRef: 'salah', fromMinute: 0, toMinute: null },
+        { memberId: 'alice', playerRef: 'palmer', fromMinute: 0, toMinute: null },
+      ],
+      powerUps: [boost('alice', 'salah', 'double_goals'), boost('alice', 'palmer', 'double_passes')],
+      rules,
+    });
+
+    expect(result.entries.map((e) => e.multiplier)).toEqual([2, 2]);
+    expect(result.totals.alice).toBe(360 + 2);
+  });
+
+  it("leaves the manager's other player unboosted", () => {
+    const result = replayLedger({
+      events: [{ minute: 25, type: 'goal.scored', playerRef: 'palmer' }],
+      positions,
+      stints: [
+        { memberId: 'alice', playerRef: 'salah', fromMinute: 0, toMinute: null },
+        { memberId: 'alice', playerRef: 'palmer', fromMinute: 0, toMinute: null },
+      ],
+      powerUps: [boost('alice', 'salah', 'double_all')],
+      rules,
+    });
+
+    expect(result.entries[0]?.multiplier).toBe(1);
+  });
+
+  it('does not hand a running power-up to the manager a player is traded to', () => {
+    const result = replayLedger({
+      events: [{ minute: 25, type: 'goal.scored', playerRef: 'salah' }],
+      positions,
+      stints: [
+        { memberId: 'alice', playerRef: 'salah', fromMinute: 0, toMinute: 22 },
+        { memberId: 'bob', playerRef: 'salah', fromMinute: 22, toMinute: null },
+      ],
+      powerUps: [boost('alice', 'salah', 'double_goals')],
+      rules,
+    });
+
+    expect(result.totals).toEqual({ bob: 180 });
   });
 
   it('pays the outgoing manager for what happened before a swap and the new one after', () => {
@@ -92,10 +147,10 @@ describe('replayLedger', () => {
       rules,
     });
 
-    expect(result.totals).toEqual({ alice: 9, bob: 9 });
+    expect(result.totals).toEqual({ alice: 180, bob: 180 });
     // Nothing is retroactively moved: the 30' goal stays with Alice forever.
-    expect(result.byMemberPlayer['alice:salah']).toBe(9);
-    expect(result.byMemberPlayer['bob:salah']).toBe(9);
+    expect(result.byMemberPlayer['alice:salah']).toBe(180);
+    expect(result.byMemberPlayer['bob:salah']).toBe(180);
   });
 
   it('gives an end-of-match clean sheet to whoever holds the player at the whistle', () => {
@@ -111,7 +166,7 @@ describe('replayLedger', () => {
     });
 
     // The consequence of event-time attribution: Alice held him for 70 minutes and gets nothing.
-    expect(result.totals).toEqual({ bob: 5 });
+    expect(result.totals).toEqual({ bob: 100 });
   });
 
   it('ignores events for players nobody owns', () => {
@@ -131,10 +186,10 @@ describe('replayLedger', () => {
       events: [{ minute: 25, type: 'pass.missed', playerRef: 'palmer' }],
       positions,
       stints: [{ memberId: 'alice', playerRef: 'palmer', fromMinute: 0, toMinute: null }],
-      powerUps: [{ memberId: 'alice', kind: 'double_passes', fromMinute: 20, toMinute: 30 }],
+      powerUps: [boost('alice', 'palmer', 'double_passes')],
       rules,
     });
     expect(result.entries[0]?.multiplier).toBe(1);
-    expect(result.totals.alice).toBe(-0.05);
+    expect(result.totals.alice).toBe(-1);
   });
 });

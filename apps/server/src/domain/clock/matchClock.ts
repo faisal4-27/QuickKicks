@@ -10,7 +10,7 @@ import { buildLineup, buildRefIndex, ratingsByRef } from '../../providers/matchD
 import { fixturePlayers } from '../../seed/catalog.js';
 import { expireDuePowerUps, rehydratePowerUps } from '../powerups/powerUpService.js';
 import { setRoomStatus } from '../room/roomService.js';
-import { currentStandings, loadRoom } from '../room/snapshot.js';
+import { currentStandings, loadRoom, publishMembers } from '../room/snapshot.js';
 import { buildRecap } from '../scoring/recap.js';
 import { ingestEvent, type IngestContext } from '../scoring/scoringEngine.js';
 import { expireDueTrades } from '../roster/tradeService.js';
@@ -151,9 +151,8 @@ export async function startMatchClock(roomId: string): Promise<void> {
         await publishToRoom(roomId, 'trade:resolved', { trade });
       }
 
-      if (touched.size > 0) {
-        await publishToRoom(roomId, 'score:update', { standings: await currentStandings(roomId) });
-      }
+      // Members, not just standings: the points on each rostered player moved too.
+      if (touched.size > 0) await publishMembers(roomId);
 
       if (minute >= running.finalMinute) await finish();
     } catch (error) {

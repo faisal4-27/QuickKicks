@@ -64,19 +64,13 @@ export async function seedCatalog(
         shortName: team.shortName,
         crestUrl: team.crestUrl,
       })
-      .onConflictDoNothing()
+      .onConflictDoUpdate({
+        target: teams.externalRef,
+        set: { name: team.name, shortName: team.shortName, crestUrl: team.crestUrl },
+      })
       .returning({ id: teams.id });
 
-    const teamId =
-      row?.id ??
-      (
-        await exec
-          .select({ id: teams.id })
-          .from(teams)
-          .where(eq(teams.externalRef, team.externalRef))
-          .limit(1)
-      )[0]?.id;
-
+    const teamId = row?.id;
     if (!teamId) throw new Error(`Failed to resolve team ${team.externalRef}`);
     teamIdByRef.set(team.externalRef, teamId);
 

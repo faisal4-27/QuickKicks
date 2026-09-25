@@ -2,9 +2,9 @@ import type { MatchEventType, Position, PowerUpKind } from '../types/enums.js';
 import { NON_SCORING_EVENT_TYPES } from '../types/enums.js';
 import { POWER_UP_TARGETS, type PointValue, type PowerUpConfig, type ScoringRules } from './rules.js';
 
-/** Points are stored to 2dp in Postgres; keep every intermediate value on the same grid. */
+/** Points are whole numbers everywhere: every base value is an integer and so is every factor. */
 export function roundPoints(value: number): number {
-  return Math.round(value * 100) / 100;
+  return Math.round(value);
 }
 
 export function basePointsFor(
@@ -29,7 +29,8 @@ function powerUpMatches(kind: PowerUpKind, type: MatchEventType): boolean {
 }
 
 /**
- * Resolves the multiplier for one event given the power-ups active at that match-minute.
+ * Resolves the multiplier for one event given the power-ups active on that player at that
+ * match-minute.
  * Losses are left alone unless the ruleset opts in via `applyToNegative`.
  */
 export function resolveMultiplier(
@@ -76,10 +77,9 @@ export function scoreEvent(
   };
 }
 
-/** Formats a point total the way the UI shows it: trimmed, signed where useful. */
+/** Formats a point total the way the UI shows it: a whole number, signed where useful. */
 export function formatPoints(value: number, opts: { signed?: boolean } = {}): string {
   const rounded = roundPoints(value);
-  const body = Number.isInteger(rounded) ? rounded.toFixed(0) : rounded.toFixed(1);
-  if (opts.signed && rounded > 0) return `+${body}`;
-  return body;
+  if (opts.signed && rounded > 0) return `+${rounded}`;
+  return String(rounded);
 }

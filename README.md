@@ -31,7 +31,7 @@ npm run dev
 1. Host picks a name and creates a room. Friends join with the six-character code.
 2. Host starts a two-round snake draft of the two starting XIs.
 3. The last pick kicks off the simulated match. Points update live.
-4. During the match: two power-up charges, one swap before 60', 1-for-1 trades until 75'.
+4. During the match: three power-ups (each used once, on one of your players, and never two on the same player at once), one swap before 60', 1-for-1 trades until 75'.
 5. Full time produces a recap.
 
 Points already earned stay with you on a swap or trade. The incoming player starts from zero for you.

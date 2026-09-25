@@ -1,35 +1,71 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Outfit:wght@400;500;600;700&display=swap');
+/*
+ * Tailwind's theme and utilities, without preflight: the lobby, draft and recap pages are still
+ * styled by the hand-written rules below, and preflight's resets would flatten them.
+ */
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+@theme {
+  --color-navy-950: #060e1b;
+  --color-navy-900: #0a1628;
+  --color-navy-850: #0d1b31;
+  --color-navy-800: #10213b;
+  --color-navy-700: #16304f;
+  --color-navy-600: #1f3d63;
+  --color-sky: #4da6ff;
+  --color-sky-soft: #8cc6ff;
+  --color-ink: #041222;
+  --color-mist: #8ba3c7;
+  --color-gain: #3ddc84;
+  --color-loss: #ff5d6c;
+  --color-gold: #f5c542;
+  --color-silver: #c7d2e0;
+  --color-bronze: #e0915a;
+  --font-display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --font-sans: Inter, system-ui, sans-serif;
+}
 
 :root {
   color-scheme: dark;
-  --bg: #08110d;
-  --bg-2: #0e1a14;
-  --surface: #13241c;
-  --surface-2: #1a3026;
-  --line: #2a4638;
-  --text: #eef6ee;
-  --muted: #8aa392;
-  --accent: #c8f06c;
-  --accent-ink: #10240f;
-  --gold: #e8c36a;
-  --danger: #ff7a7a;
-  --online: #6ee7a8;
+  --bg: #0a1628;
+  --bg-2: #0d1b31;
+  --surface: #10213b;
+  --surface-2: #16304f;
+  --line: #1f3d63;
+  --text: #ffffff;
+  --muted: #8ba3c7;
+  --accent: #4da6ff;
+  --accent-ink: #041222;
+  --gold: #f5c542;
+  --danger: #ff5d6c;
+  --online: #3ddc84;
   --gk: #7dd3fc;
   --def: #86efac;
   --mid: #fde68a;
   --fwd: #fda4af;
-  --radius: 16px;
-  --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+  --radius: 14px;
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.4);
 }
 
+
+/* The live screen is built with Tailwind utilities; this is the slice of preflight it needs. */
+@layer base {
+  .qk-live :where(h1, h2, h3, h4, p, ol, ul, figure) { margin: 0; padding: 0; }
+  .qk-live :where(ol, ul) { list-style: none; }
+  .qk-live :where(button) { background: none; border: 0; padding: 0; color: inherit; }
+  .qk-live :where(a) { color: inherit; }
+}
+
+/* Hand-written styles for the lobby, draft and recap pages, layered so utilities always win. */
+@layer components {
 * { box-sizing: border-box; }
 html, body, #root { min-height: 100%; }
 body {
   margin: 0;
-  font-family: Outfit, system-ui, sans-serif;
+  font-family: Inter, system-ui, sans-serif;
   background:
-    radial-gradient(1200px 600px at 10% -10%, rgba(200, 240, 108, 0.08), transparent 50%),
-    radial-gradient(900px 500px at 100% 0%, rgba(232, 195, 106, 0.06), transparent 45%),
+    radial-gradient(1200px 600px at 50% -10%, rgba(77, 166, 255, 0.08), transparent 55%),
     var(--bg);
   color: var(--text);
 }
@@ -54,15 +90,22 @@ a { color: inherit; }
   gap: 1rem;
   padding: 0.85rem 1.25rem;
   border-bottom: 1px solid var(--line);
-  background: rgba(8, 17, 13, 0.7);
+  background: rgba(10, 22, 40, 0.8);
   backdrop-filter: blur(12px);
   position: sticky;
   top: 0;
   z-index: 5;
 }
-.brand { font-weight: 700; letter-spacing: -0.03em; text-decoration: none; }
+.brand {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800;
+  font-size: 1.4rem;
+  text-transform: uppercase;
+  color: var(--accent);
+  text-decoration: none;
+}
 .topbar__code {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
   letter-spacing: 0.16em;
   color: var(--gold);
 }
@@ -86,11 +129,16 @@ a { color: inherit; }
 }
 .landing__hero { max-width: 38rem; }
 .landing h1, .page h1 {
-  font-size: clamp(2.4rem, 6vw, 4.4rem);
-  letter-spacing: -0.05em;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(2.6rem, 6vw, 4.6rem);
+  letter-spacing: 0.01em;
+  line-height: 0.95;
   margin: 0 0 0.6rem;
 }
-.landing__card, .panel, .modal__card, .recap-card, .roster-card, .trade-card {
+.page h2, .page h3 { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; letter-spacing: 0.02em; }
+.landing__card, .panel, .recap-card {
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -120,7 +168,7 @@ a { color: inherit; }
   padding: 0.75rem 0.9rem;
   width: 100%;
 }
-.join-code { font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.18em; text-transform: uppercase; }
+.join-code { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; }
 
 .row { display: flex; gap: 0.6rem; align-items: center; }
 .btn {
@@ -131,7 +179,6 @@ a { color: inherit; }
 }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .btn--primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; font-weight: 600; }
-.btn--ghost { background: transparent; }
 .btn--block { width: 100%; }
 
 .join-code-display {
@@ -143,14 +190,14 @@ a { color: inherit; }
   border-radius: var(--radius);
   border: 1px dashed var(--gold);
   background: #1a2614;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
   font-size: clamp(2rem, 7vw, 3.2rem);
   letter-spacing: 0.2em;
 }
 .join-code-display small { font-size: 0.75rem; letter-spacing: 0.08em; color: var(--muted); }
 
-.member-list, .leaderboard, .feed ol, .recap-list, .trade-list { list-style: none; margin: 0; padding: 0; }
-.member-list li, .leaderboard__row {
+.member-list, .feed ol, .recap-list { list-style: none; margin: 0; padding: 0; }
+.member-list li {
   display: flex;
   align-items: center;
   gap: 0.6rem;
@@ -203,7 +250,7 @@ a { color: inherit; }
   border-radius: 14px;
   padding: 0.7rem 1rem;
 }
-.pick-timer__value { font-family: 'IBM Plex Mono', monospace; font-size: 1.8rem; }
+.pick-timer__value { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1.8rem; }
 .pick-timer.is-urgent { border-color: var(--danger); color: var(--danger); }
 
 .filters { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 1rem 0; align-items: center; }
@@ -216,7 +263,7 @@ a { color: inherit; }
 }
 .chip.is-on { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
 
-.player-grid, .swap-grid__pool {
+.player-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 0.6rem;
@@ -236,7 +283,7 @@ a { color: inherit; }
 .player-card.is-selected { outline: 2px solid var(--accent); }
 .player-card.is-disabled { opacity: 0.55; }
 .player-card__position {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
   font-size: 0.72rem;
   padding: 0.3rem 0.4rem;
   border-radius: 8px;
@@ -250,47 +297,19 @@ a { color: inherit; }
 .player-card__name { font-weight: 600; }
 .player-card__meta, .player-card__footer { color: var(--muted); font-size: 0.78rem; }
 
-.match-header {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
+.leaderboard__rank { width: 2rem; color: var(--gold); font-family: 'Barlow Condensed', sans-serif; font-weight: 700; }
+.recap-card__pts {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
 }
-.match-header__score {
-  display: flex;
-  gap: 0.7rem;
-  align-items: center;
-  font-size: 1.4rem;
-}
-.match-header__clock { display: flex; align-items: center; gap: 0.6rem; justify-content: center; }
-.match-header__min { font-family: 'IBM Plex Mono', monospace; font-size: 1.6rem; }
-.match-header__me { justify-self: end; text-align: right; display: grid; }
-
-.live-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(260px, 0.8fr);
-  gap: 1rem;
-}
-.live-grid__main { display: grid; gap: 1rem; }
-
-.leaderboard__rank { width: 2rem; color: var(--gold); font-family: 'IBM Plex Mono', monospace; }
-.leaderboard__name { flex: 1; display: flex; align-items: center; gap: 0.45rem; }
-.leaderboard__pts, .roster-card__pts, .recap-card__pts, .feed__pts {
-  font-family: 'IBM Plex Mono', monospace;
-}
-.leaderboard__row.is-me, .roster-card.is-me { box-shadow: inset 0 0 0 1px var(--accent); }
-
-.rosters { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.7rem; }
-.roster-card header, .recap-card header, .panel__head {
+.recap-card header, .panel__head {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 0.7rem;
 }
-.roster-card__pts, .recap-card__pts { margin-left: auto; }
-.roster-card ul, .recap-card__players, .recap-card__break { list-style: none; margin: 0; padding: 0; }
-.roster-card li, .recap-card__players li, .recap-card__break li {
+.recap-card__pts { margin-left: auto; }
+.recap-card__players, .recap-card__break { list-style: none; margin: 0; padding: 0; }
+.recap-card__players li, .recap-card__break li {
   display: flex;
   justify-content: space-between;
   gap: 0.6rem;
@@ -298,42 +317,9 @@ a { color: inherit; }
   color: var(--muted);
 }
 
-.powerups__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
-.powerups__btn {
-  display: grid;
-  gap: 0.25rem;
-  background: var(--surface-2);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 0.7rem;
-  text-align: left;
-}
-.powerups__btn small { color: var(--muted); }
-.powerups__btn.is-live { outline: 2px solid var(--accent); }
-.powerups__btn.is-used { opacity: 0.45; }
-
-.swap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 0.8rem; }
-.swap-grid h4 { margin: 0 0 0.4rem; }
-
 .feed { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 1rem; max-height: 80vh; overflow: auto; }
-.feed__item { display: grid; grid-template-columns: 2.4rem 1fr auto; gap: 0.5rem; padding: 0.45rem 0; border-bottom: 1px solid var(--line); }
-.feed__item.is-mine { background: rgba(200, 240, 108, 0.05); }
-.feed__min { font-family: 'IBM Plex Mono', monospace; color: var(--muted); }
-.feed__pts.is-neg { color: var(--danger); }
-
-.modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  display: grid;
-  place-items: center;
-  padding: 1rem;
-  z-index: 20;
-}
-.modal__card { width: min(760px, 100%); max-height: 90vh; overflow: auto; }
 
 .recap-list { display: grid; gap: 0.8rem; margin: 1.2rem 0; }
-.trade-card { margin-bottom: 0.6rem; }
 
 .toasts {
   position: fixed;
@@ -354,7 +340,6 @@ a { color: inherit; }
 .toast--error { border-color: var(--danger); }
 
 @media (max-width: 860px) {
-  .live-grid, .swap-grid, .match-header, .powerups__grid { grid-template-columns: 1fr; }
-  .match-header__me { justify-self: start; text-align: left; }
   .page__head { flex-direction: column; align-items: stretch; }
+}
 }

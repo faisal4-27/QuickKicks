@@ -9,13 +9,16 @@ export type PointValue = number | ({ default: number } & Partial<Record<Position
 export interface PowerUpConfig {
   /** Match-minutes a power-up stays active once triggered. */
   durationMinutes: number;
-  /** How many activations each manager gets for the whole match. */
+  /** How many activations each manager gets for the whole match. Each kind is usable once. */
   chargesPerManager: number;
-  /** Whether a second power-up may be activated while one is still running. */
-  allowOverlap: boolean;
+  /**
+   * Whether one player may carry a second power-up while the first is still running. A manager's
+   * two players can always be boosted at the same time; this only governs stacking on one player.
+   */
+  allowStackingOnPlayer: boolean;
   /** Multiplier a single matching power-up applies. */
   factor: number;
-  /** Ceiling on the product of overlapping power-ups. */
+  /** Ceiling on the product of power-ups stacked on one player. */
   maxMultiplier: number;
   /**
    * Whether multipliers also amplify point losses. Off by default: doubling a
@@ -58,24 +61,27 @@ export interface ScoringRules {
  * The resulting shape: midfielders and defenders are the steady floor, forwards and keepers are
  * streakier but pay out when they land. Rooms snapshot this object at creation time, so retuning
  * it never rewrites a match that has already been played.
+ *
+ * v2 keeps v1's ratios but puts them on a whole-number scale anchored at 1 point per completed
+ * pass (v1 x20), so every total a manager sees is an integer.
  */
 export const DEFAULT_SCORING_RULES: ScoringRules = {
-  version: 1,
+  version: 2,
   base: {
-    'pass.completed': 0.05,
-    'pass.missed': -0.05,
-    'tackle.won': 1,
-    interception: 1,
-    'foul.committed': -0.5,
-    'shot.on_target': 2.5,
+    'pass.completed': 1,
+    'pass.missed': -1,
+    'tackle.won': 20,
+    interception: 20,
+    'foul.committed': -10,
+    'shot.on_target': 50,
     'shot.off_target': 0,
-    'goal.scored': { default: 9, DEF: 10, GK: 12 },
-    assist: 4.5,
-    save: 2,
-    'goal.conceded': { default: 0, DEF: -0.5, GK: -0.75 },
-    'card.yellow': -1,
-    'card.red': -3,
-    'clean_sheet.awarded': { default: 0, MID: 1, DEF: 5, GK: 6 },
+    'goal.scored': { default: 180, DEF: 200, GK: 240 },
+    assist: 90,
+    save: 40,
+    'goal.conceded': { default: 0, DEF: -10, GK: -15 },
+    'card.yellow': -20,
+    'card.red': -60,
+    'clean_sheet.awarded': { default: 0, MID: 20, DEF: 100, GK: 120 },
     'sub.on': 0,
     'sub.off': 0,
     'period.start': 0,
@@ -83,8 +89,8 @@ export const DEFAULT_SCORING_RULES: ScoringRules = {
   },
   powerUps: {
     durationMinutes: 10,
-    chargesPerManager: 2,
-    allowOverlap: false,
+    chargesPerManager: 3,
+    allowStackingOnPlayer: false,
     factor: 2,
     maxMultiplier: 2,
     applyToNegative: false,

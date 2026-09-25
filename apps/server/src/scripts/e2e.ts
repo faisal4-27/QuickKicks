@@ -32,19 +32,22 @@ function parseArgs(argv: string[]): Options {
   const options: Options = {
     apiUrl: process.env.E2E_API_URL ?? 'http://localhost:4000',
     managers: 3,
-    timeoutMs: 180_000,
+    // A full match at the default MATCH_MS_PER_MINUTE=2000 alone takes over three minutes.
+    timeoutMs: 600_000,
   };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     const next = argv[i + 1];
     if (arg === '--api' && next) { options.apiUrl = next; i += 1; }
     else if (arg === '--managers' && next) { options.managers = Math.max(2, Number(next) || 3); i += 1; }
-    else if (arg === '--timeout' && next) { options.timeoutMs = Math.max(10_000, Number(next) || 180_000); i += 1; }
+    else if (arg === '--timeout' && next) { options.timeoutMs = Math.max(10_000, Number(next) || 600_000); i += 1; }
   }
   return options;
 }
 
 let passed = 0;
+/** Actions the script deliberately gets refused; each refusal also pushes an action:error toast. */
+const expectedRefusals: string[] = [];
 const failures: string[] = [];
 
 function check(label: string, condition: boolean, detail = ''): void {
@@ -220,6 +223,12 @@ async function main(): Promise<void> {
     socket.on('members:update', ({ members }) => {
       if (manager.snapshot) manager.snapshot = { ...manager.snapshot, members };
     });
+    socket.on('presence:update', ({ connectedMemberIds }) => {
+      if (!manager.snapshot) return;
+      const online = new Set(connectedMemberIds);
+      const members = manager.snapshot.members.map((m) => ({ ...m, connected: online.has(m.id) }));
+      manager.snapshot = { ...manager.snapshot, members };
+    });
     socket.on('match:events', ({ items }) => { manager.feedCount += items.length; });
     socket.on('action:error', ({ action, message }) => { manager.errors.push(`${action}: ${message}`); });
     managers.push(manager);
@@ -241,6 +250,7 @@ async function main(): Promise<void> {
 
   const nonHostStart = await emit(managers[1]!.socket, 'room:start-draft', {});
   check('a non-host cannot start the draft', !nonHostStart.ok, JSON.stringify(nonHostStart));
+  expectedRefusals.push('room:start-draft');
 
   step('Draft');
   // Each manager answers its own turn; the room drives the order.
@@ -302,11 +312,47 @@ async function main(): Promise<void> {
   check('every manager holds two players',
     managers.every((m) => (m.snapshot?.members.find((x) => x.id === m.memberId)?.roster.length ?? 0) === 2));
 
-  step('Power-up');
-  const puAck = await emit(host.socket, 'powerup:activate', { kind: 'double_goals' });
-  check('host activates a power-up', puAck.ok, JSON.stringify(puAck));
-  const puAgain = await emit(host.socket, 'powerup:activate', { kind: 'double_goals' });
-  check('the same power-up cannot be used twice', !puAgain.ok, JSON.stringify(puAgain));
+  step('Power-ups');
+  const hostRoster = host.snapshot?.members.find((m) => m.id === host.memberId)?.roster ?? [];
+  const [first, second] = hostRoster.map((r) => r.playerId);
+  const someoneElses = managers[1]!.snapshot?.members
+    .find((m) => m.id === managers[1]!.memberId)?.roster[0]?.playerId;
+  if (!first || !second || !someoneElses) throw new Error('rosters are not ready for power-ups');
+
+  const puFirst = await emit(host.socket, 'powerup:activate', { kind: 'double_goals', playerId: first });
+  check('host powers up their first player', puFirst.ok, JSON.stringify(puFirst));
+
+  const puReuse = await emit(host.socket, 'powerup:activate', { kind: 'double_goals', playerId: second });
+  check('the same power-up cannot be used twice', !puReuse.ok, JSON.stringify(puReuse));
+  expectedRefusals.push('powerup:activate');
+
+  const puStack = await emit(host.socket, 'powerup:activate', { kind: 'double_passes', playerId: first });
+  check('one player cannot carry two power-ups at once', !puStack.ok, JSON.stringify(puStack));
+  expectedRefusals.push('powerup:activate');
+
+  const puSecond = await emit(host.socket, 'powerup:activate', { kind: 'double_passes', playerId: second });
+  check('both players can be powered up at the same time', puSecond.ok, JSON.stringify(puSecond));
+
+  const puForeign = await emit(host.socket, 'powerup:activate', { kind: 'double_all', playerId: someoneElses });
+  check("cannot power up another manager's player", !puForeign.ok, JSON.stringify(puForeign));
+  expectedRefusals.push('powerup:activate');
+
+  const boosted = await api(options, `/api/rooms/${roomId}`, { cookie: host.cookie });
+  const hostPowerUps = (boosted.body as RoomSnapshot).members.find((m) => m.id === host.memberId)?.powerUps ?? [];
+  check('snapshot shows each power-up on its own player',
+    hostPowerUps.filter((p) => p.active).map((p) => p.playerId).sort().join() === [first, second].sort().join(),
+    JSON.stringify(hostPowerUps));
+
+  // The third power-up needs a free player, so wait for the first boost to run out.
+  const firstExpiry = hostPowerUps.find((p) => p.playerId === first)?.expiresAtMinute ?? 0;
+  const msPerMinute = host.snapshot?.room.msPerMatchMinute ?? 2000;
+  await waitFor<void>('first power-up to expire', (firstExpiry + 2) * msPerMinute + 10_000, (resolve) => {
+    const handler = ({ minute }: { minute: number }) => { if (minute >= firstExpiry) resolve(); };
+    host.socket.on('match:tick', handler);
+    return () => host.socket.off('match:tick', handler);
+  });
+  const puThird = await emit(host.socket, 'powerup:activate', { kind: 'double_all', playerId: first });
+  check('the third power-up can go on a player once their boost has ended', puThird.ok, JSON.stringify(puThird));
 
   step('Swap');
   const swapper = managers[1]!;
@@ -319,6 +365,7 @@ async function main(): Promise<void> {
     check('manager swaps a player', swapAck.ok, JSON.stringify(swapAck));
     const swapAgain = await emit(swapper.socket, 'swap:execute', { outPlayerId: freeAgent, inPlayerId: outPlayer });
     check('a second swap is refused (one per manager)', !swapAgain.ok, JSON.stringify(swapAgain));
+    expectedRefusals.push('swap:execute');
   }
 
   step('Trade');
@@ -352,6 +399,7 @@ async function main(): Promise<void> {
 
       const wrongResponder = await emit(proposer.socket, 'trade:respond', { tradeId: trade.id, accept: true });
       check('only the receiver can accept an offer', !wrongResponder.ok, JSON.stringify(wrongResponder));
+      expectedRefusals.push('trade:respond');
 
       const acceptAck = await emit(receiver.socket, 'trade:respond', { tradeId: trade.id, accept: true });
       check('receiver accepts the trade', acceptAck.ok, JSON.stringify(acceptAck));
@@ -369,7 +417,9 @@ async function main(): Promise<void> {
   }
 
   step('Full time');
-  const recap = await waitFor<MatchRecap>('match:finished', 120_000, (resolve) => {
+  // 90' plus half time and stoppage, at whatever speed this server runs the clock.
+  const fullTimeMs = 100 * (host.snapshot?.room.msPerMatchMinute ?? 2000) + 30_000;
+  const recap = await waitFor<MatchRecap>('match:finished', fullTimeMs, (resolve) => {
     const handler = ({ recap: r }: { recap: MatchRecap }) => resolve(r);
     host.socket.on('match:finished', handler);
     return () => host.socket.off('match:finished', handler);
@@ -409,9 +459,15 @@ async function main(): Promise<void> {
     standings.every((row) => Math.abs((memberPoints.get(row.memberId) ?? 0) - row.points) < 0.011),
     standings.map((r) => `${r.displayName}:${r.points}/${memberPoints.get(r.memberId)}`).join(' '));
 
-  const noErrors = managers.every((m) => m.errors.length === 0);
-  check('no unexpected action:error pushed to clients', noErrors,
-    managers.flatMap((m) => m.errors).join(' | '));
+  // Each deliberate refusal accounts for exactly one toast; anything left over is unexpected.
+  const pending = [...expectedRefusals];
+  const unexpected = managers.flatMap((m) => m.errors).filter((error) => {
+    const i = pending.indexOf(error.split(':').slice(0, 2).join(':'));
+    if (i === -1) return true;
+    pending.splice(i, 1);
+    return false;
+  });
+  check('no unexpected action:error pushed to clients', unexpected.length === 0, unexpected.join(' | '));
 
   step('Result');
   console.log(`\nFinal score: ${finalSnapshot.fixture.homeTeam.shortName} ${finalSnapshot.match.homeGoals} - ${finalSnapshot.match.awayGoals} ${finalSnapshot.fixture.awayTeam.shortName}`);

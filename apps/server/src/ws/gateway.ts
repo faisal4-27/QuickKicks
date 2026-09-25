@@ -8,7 +8,7 @@ import type { Server as HttpServer } from 'node:http';
 import { Server, type Socket } from 'socket.io';
 import { env } from '../env.js';
 import { DomainError, memberFor } from '../domain/room/roomService.js';
-import { buildRoomSnapshot, currentStandings } from '../domain/room/snapshot.js';
+import { buildRoomSnapshot, publishMembers } from '../domain/room/snapshot.js';
 import { startDraft, submitPick } from '../domain/draft/draftService.js';
 import { activatePowerUp } from '../domain/powerups/powerUpService.js';
 import { executeSwap } from '../domain/roster/swapService.js';
@@ -112,11 +112,17 @@ export async function createGateway(app: FastifyInstance): Promise<Server> {
       guard('powerup:activate', socket, ack, async () => {
         const roomId = requireRoom(socket);
         const memberId = requireMemberId(socket);
-        const { powerUp } = await activatePowerUp(roomId, memberId, payload.kind);
+        const { powerUp } = await activatePowerUp(
+          roomId,
+          memberId,
+          payload.playerId,
+          payload.kind,
+        );
         await publishToRoom(roomId, 'powerup:activated', {
           memberId,
           powerUp: {
             id: powerUp.id,
+            playerId: powerUp.playerId,
             kind: powerUp.kind,
             activatedAtMinute: powerUp.activatedAtMinute,
             expiresAtMinute: powerUp.expiresAtMinute,
@@ -208,12 +214,3 @@ function requireMemberId(socket: AppSocket): string {
   return memberId;
 }
 
-/**
- * Roster, power-up and swap changes all move several numbers at once, so the simplest correct
- * thing is to republish the member list plus the leaderboard rather than hand-patch each field.
- */
-export async function publishMembers(roomId: string): Promise<void> {
-  const snapshot = await buildRoomSnapshot(roomId);
-  await publishToRoom(roomId, 'members:update', { members: snapshot.members });
-  await publishToRoom(roomId, 'score:update', { standings: await currentStandings(roomId) });
-}

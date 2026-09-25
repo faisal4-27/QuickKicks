@@ -84,6 +84,9 @@ export function RoomPage() {
   const status = snapshot.room.status;
   const showRecap = status === 'finished' || Boolean(recap);
 
+  // The live screen is full-height and carries its own top bar.
+  if (!showRecap && status === 'live') return <Live socket={socket} />;
+
   return (
     <>
       <nav className="topbar">
@@ -97,10 +100,8 @@ export function RoomPage() {
         <Recap />
       ) : status === 'lobby' ? (
         <Lobby socket={socket} />
-      ) : status === 'drafting' ? (
-        <Draft socket={socket} />
       ) : (
-        <Live socket={socket} />
+        <Draft socket={socket} />
       )}
     </>
   );

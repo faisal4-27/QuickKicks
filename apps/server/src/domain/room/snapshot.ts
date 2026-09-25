@@ -26,6 +26,7 @@ import {
   trades,
 } from '../../db/schema.js';
 import { keys } from '../../redis/keys.js';
+import { publishToRoom } from '../../redis/pubsub.js';
 import { redis } from '../../redis/client.js';
 import { emptyRoomState, readRoomState } from '../../redis/roomState.js';
 import { fixturePlayers } from '../../seed/catalog.js';
@@ -208,10 +209,13 @@ export async function buildRoomSnapshot(roomId: string): Promise<RoomSnapshot> {
       points: perPlayer.get(`${member.id}:${slot.playerId}`) ?? 0,
     }));
 
-    const memberPowerUps: PowerUpView[] = powerUpRows
-      .filter((p) => p.memberId === member.id)
+    const memberRows = powerUpRows.filter((p) => p.memberId === member.id);
+    const memberPowerUps: PowerUpView[] = memberRows
+      // Rows from before power-ups were per player have nobody to show them against.
+      .flatMap((p) => (p.playerId ? [{ ...p, playerId: p.playerId }] : []))
       .map((p) => ({
         id: p.id,
+        playerId: p.playerId,
         kind: p.kind,
         activatedAtMinute: p.activatedAtMinute,
         expiresAtMinute: p.expiresAtMinute,
@@ -231,7 +235,7 @@ export async function buildRoomSnapshot(roomId: string): Promise<RoomSnapshot> {
       powerUps: memberPowerUps,
       powerUpChargesRemaining: Math.max(
         0,
-        rules.powerUps.chargesPerManager - memberPowerUps.length,
+        rules.powerUps.chargesPerManager - memberRows.length,
       ),
       swapsRemaining: Math.max(0, rules.swaps.maxPerManager - swapsUsed),
     };
@@ -341,4 +345,15 @@ export async function currentStandings(roomId: string): Promise<StandingRow[]> {
       points: points.get(m.id) ?? 0,
     })),
   );
+}
+
+/**
+ * Roster, power-up, swap and scoring changes all move several numbers at once (a manager's total
+ * and the points on each of their players), so the simplest correct thing is to republish the
+ * member list plus the leaderboard rather than hand-patch each field.
+ */
+export async function publishMembers(roomId: string): Promise<void> {
+  const snapshot = await buildRoomSnapshot(roomId);
+  await publishToRoom(roomId, 'members:update', { members: snapshot.members });
+  await publishToRoom(roomId, 'score:update', { standings: await currentStandings(roomId) });
 }

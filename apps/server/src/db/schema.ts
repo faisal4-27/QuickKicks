@@ -32,14 +32,20 @@ export const users = pgTable('users', {
   createdAt: createdAt(),
 });
 
-export const teams = pgTable('teams', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  externalRef: text('external_ref'),
-  name: text('name').notNull(),
-  shortName: text('short_name').notNull(),
-  crestUrl: text('crest_url'),
-  createdAt: createdAt(),
-});
+export const teams = pgTable(
+  'teams',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    externalRef: text('external_ref'),
+    name: text('name').notNull(),
+    shortName: text('short_name').notNull(),
+    crestUrl: text('crest_url'),
+    createdAt: createdAt(),
+  },
+  (t) => ({
+    byExternalRef: uniqueIndex('teams_external_ref_key').on(t.externalRef),
+  }),
+);
 
 export const players = pgTable(
   'players',
@@ -61,18 +67,24 @@ export const players = pgTable(
   }),
 );
 
-export const fixtures = pgTable('fixtures', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  externalRef: text('external_ref'),
-  homeTeamId: uuid('home_team_id')
-    .notNull()
-    .references(() => teams.id),
-  awayTeamId: uuid('away_team_id')
-    .notNull()
-    .references(() => teams.id),
-  status: text('status').$type<MatchStatus>().notNull().default('scheduled'),
-  createdAt: createdAt(),
-});
+export const fixtures = pgTable(
+  'fixtures',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    externalRef: text('external_ref'),
+    homeTeamId: uuid('home_team_id')
+      .notNull()
+      .references(() => teams.id),
+    awayTeamId: uuid('away_team_id')
+      .notNull()
+      .references(() => teams.id),
+    status: text('status').$type<MatchStatus>().notNull().default('scheduled'),
+    createdAt: createdAt(),
+  },
+  (t) => ({
+    byExternalRef: uniqueIndex('fixtures_external_ref_key').on(t.externalRef),
+  }),
+);
 
 export const rooms = pgTable(
   'rooms',
@@ -239,6 +251,8 @@ export const powerUps = pgTable(
     memberId: uuid('member_id')
       .notNull()
       .references(() => roomMembers.id, { onDelete: 'cascade' }),
+    /** The boosted player. Null only on rows from before power-ups were per player. */
+    playerId: uuid('player_id').references(() => players.id),
     kind: text('kind').$type<PowerUpKind>().notNull(),
     activatedAtMinute: integer('activated_at_minute').notNull(),
     expiresAtMinute: integer('expires_at_minute').notNull(),

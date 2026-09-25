@@ -7,13 +7,18 @@ import { withLock } from '../../redis/locks.js';
 import { emptyRoomState, readRoomState } from '../../redis/roomState.js';
 import { DomainError } from '../room/roomService.js';
 import { loadRoom } from '../room/snapshot.js';
+import { activeSlotsFor } from '../roster/rosterService.js';
 import { armPowerUp, disarmPowerUp, readActivePowerUps } from './powerUpState.js';
 
-function toView(row: typeof powerUps.$inferSelect, minute: number): PowerUp & { active: boolean } {
+function toView(
+  row: typeof powerUps.$inferSelect & { playerId: string },
+  minute: number,
+): PowerUp & { active: boolean } {
   return {
     id: row.id,
     roomId: row.roomId,
     memberId: row.memberId,
+    playerId: row.playerId,
     kind: row.kind,
     activatedAtMinute: row.activatedAtMinute,
     expiresAtMinute: row.expiresAtMinute,
@@ -28,13 +33,17 @@ export interface ActivateResult {
 }
 
 /**
- * Power-ups are armed for a window measured in match-minutes, never wall-clock, so a compressed
- * simulation and a real match feel the same to the manager. Activation is never retroactive:
- * only events from this minute onwards are boosted.
+ * Power-ups are armed on one of the manager's players for a window measured in match-minutes,
+ * never wall-clock, so a compressed simulation and a real match feel the same to the manager.
+ * Activation is never retroactive: only events from this minute onwards are boosted.
+ *
+ * Each kind can be used once per match. A player can carry one power-up at a time, but a
+ * manager's two players can both be boosted at once.
  */
 export async function activatePowerUp(
   roomId: string,
   memberId: string,
+  playerId: string,
   kind: PowerUpKind,
 ): Promise<ActivateResult> {
   const room = await loadRoom(roomId);
@@ -62,11 +71,19 @@ export async function activatePowerUp(
     if (existing.some((p) => p.kind === kind)) {
       throw new DomainError('You have already used that power-up.');
     }
-    if (!config.allowOverlap) {
-      const running = existing.find((p) => p.status === 'active' && minute < p.expiresAtMinute);
+
+    const roster = await activeSlotsFor(db, roomId, memberId);
+    if (!roster.some((slot) => slot.playerId === playerId)) {
+      throw new DomainError('You can only power up one of your own players.');
+    }
+
+    if (!config.allowStackingOnPlayer) {
+      const running = existing.find(
+        (p) => p.playerId === playerId && p.status === 'active' && minute < p.expiresAtMinute,
+      );
       if (running) {
         throw new DomainError(
-          `Wait for your current power-up to finish (${running.expiresAtMinute}').`,
+          `That player already has a power-up running until ${running.expiresAtMinute}'.`,
         );
       }
     }
@@ -76,6 +93,7 @@ export async function activatePowerUp(
       .values({
         roomId,
         memberId,
+        playerId,
         kind,
         activatedAtMinute: minute,
         expiresAtMinute: minute + config.durationMinutes,
@@ -84,8 +102,8 @@ export async function activatePowerUp(
       .returning();
     if (!row) throw new Error('Failed to record the power-up');
 
-    await armPowerUp(roomId, memberId, kind, row.expiresAtMinute);
-    return row;
+    await armPowerUp(roomId, memberId, playerId, kind, row.expiresAtMinute);
+    return { ...row, playerId };
   });
 
   if (!result) throw new DomainError('That did not go through. Try again.');
@@ -119,7 +137,7 @@ export async function expireDuePowerUps(
     .returning();
 
   for (const row of due) {
-    await disarmPowerUp(roomId, row.memberId, row.kind);
+    if (row.playerId) await disarmPowerUp(roomId, row.memberId, row.playerId, row.kind);
   }
 
   return due.map((row) => ({ id: row.id, memberId: row.memberId, kind: row.kind }));
@@ -132,8 +150,8 @@ export async function rehydratePowerUps(roomId: string, minute: number): Promise
     .from(powerUps)
     .where(and(eq(powerUps.roomId, roomId), eq(powerUps.status, 'active')));
   for (const row of rows) {
-    if (minute < row.expiresAtMinute) {
-      await armPowerUp(roomId, row.memberId, row.kind, row.expiresAtMinute);
+    if (row.playerId && minute < row.expiresAtMinute) {
+      await armPowerUp(roomId, row.memberId, row.playerId, row.kind, row.expiresAtMinute);
     }
   }
 }

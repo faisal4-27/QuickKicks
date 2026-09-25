@@ -101,6 +101,7 @@ export interface PowerUp {
   id: string;
   roomId: string;
   memberId: string;
+  playerId: string;
   kind: PowerUpKind;
   activatedAtMinute: number;
   expiresAtMinute: number;

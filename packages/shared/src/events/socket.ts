@@ -63,7 +63,7 @@ export interface ClientToServerEvents {
   'room:subscribe': (payload: { roomId: string }, ack: Ack) => void;
   'room:start-draft': (payload: Record<string, never>, ack: Ack) => void;
   'draft:pick': (payload: { playerId: string }, ack: Ack) => void;
-  'powerup:activate': (payload: { kind: PowerUpKind }, ack: Ack) => void;
+  'powerup:activate': (payload: { kind: PowerUpKind; playerId: string }, ack: Ack) => void;
   'swap:execute': (payload: { outPlayerId: string; inPlayerId: string }, ack: Ack) => void;
   'trade:propose': (
     payload: { toMemberId: string; offeredPlayerId: string; requestedPlayerId: string },

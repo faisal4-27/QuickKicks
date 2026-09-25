@@ -12,6 +12,8 @@ export interface OwnershipStint {
 
 export interface PowerUpWindow {
   memberId: string;
+  /** Power-ups boost one player, and only while the manager who activated it owns them. */
+  playerRef: string;
   kind: PowerUpKind;
   fromMinute: number;
   toMinute: number;
@@ -62,14 +64,25 @@ export function ownerAt(
   return stint?.memberId ?? null;
 }
 
-/** Active over [fromMinute, toMinute), so a 20'-30' boost no longer applies at 30'. */
+/**
+ * Active over [fromMinute, toMinute), so a 20'-30' boost no longer applies at 30'. Matching on
+ * the manager as well as the player means a boosted player who is traded away mid-window does
+ * not carry the boost to the new owner.
+ */
 export function activeKindsAt(
   powerUps: readonly PowerUpWindow[],
   memberId: string,
+  playerRef: string,
   minute: number,
 ): PowerUpKind[] {
   return powerUps
-    .filter((p) => p.memberId === memberId && p.fromMinute <= minute && minute < p.toMinute)
+    .filter(
+      (p) =>
+        p.memberId === memberId &&
+        p.playerRef === playerRef &&
+        p.fromMinute <= minute &&
+        minute < p.toMinute,
+    )
     .map((p) => p.kind);
 }
 
@@ -94,7 +107,7 @@ export function replayLedger(input: ReplayInput): ReplayResult {
     const memberId = ownerAt(input.stints, event.playerRef, event.minute);
     if (!memberId) continue;
 
-    const activeKinds = activeKindsAt(input.powerUps, memberId, event.minute);
+    const activeKinds = activeKindsAt(input.powerUps, memberId, event.playerRef, event.minute);
     const scored = scoreEvent(event.type, position, activeKinds, input.rules);
     if (scored.awardedPoints === 0) continue;
 

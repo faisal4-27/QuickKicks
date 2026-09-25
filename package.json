@@ -20,8 +20,8 @@
     "dev": "concurrently -n server,web -c cyan,magenta \"npm:dev:server\" \"npm:dev:web\"",
     "dev:server": "npm run dev --workspace @quickkicks/server",
     "dev:web": "npm run dev --workspace @quickkicks/web",
-    "sim": "npm run sim --workspace @quickkicks/server",
-    "e2e": "npm run e2e --workspace @quickkicks/server",
+    "sim": "npm run sim --workspace @quickkicks/server --",
+    "e2e": "npm run e2e --workspace @quickkicks/server --",
     "test": "vitest run",
     "typecheck": "npm run typecheck --workspaces --if-present"
   },
