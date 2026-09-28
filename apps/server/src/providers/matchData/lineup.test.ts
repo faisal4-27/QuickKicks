@@ -2,7 +2,15 @@ import type { Player, Team } from '@quickkicks/shared';
 import { describe, expect, it } from 'vitest';
 import { buildLineup, starterIds, type LineupSource } from './lineup.js';
 
-const team = (id: string): Team => ({ id, externalRef: `ref:${id}`, name: id, shortName: id, crestUrl: null });
+const team = (id: string): Team => ({
+  id,
+  externalRef: `ref:${id}`,
+  name: id,
+  shortName: id,
+  crestUrl: null,
+  countryName: null,
+  national: false,
+});
 const player = (id: string, teamId: string): Player => ({
   id,
   externalRef: `ref:${id}`,

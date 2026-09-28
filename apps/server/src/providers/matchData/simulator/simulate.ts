@@ -186,12 +186,15 @@ export function simulateMatch(input: SimulateInput): MatchEvent[] {
           push(minute, 'shot.off_target', player.ref, player.teamRef);
           continue;
         }
-        push(minute, 'shot.on_target', player.ref, player.teamRef);
         const converts = ON_TARGET_CONVERSION_P * CONVERSION_BIAS[player.position];
         if (rng.chance(converts)) {
+          // One shot, one scoring event. A shot that goes in is paid as the goal and nothing
+          // else; emitting `shot.on_target` too would pay the same moment twice. The stat line
+          // in `snapshotAt` still counts the goal as a shot on target.
           handleGoal(minute, player, team);
           continue;
         }
+        push(minute, 'shot.on_target', player.ref, player.teamRef);
         if (rng.chance(SAVE_GIVEN_NO_GOAL_P)) {
           const keeper = opponentOf(team).players.find((p) => p.position === 'GK' && !p.sentOff);
           if (keeper) push(minute, 'save', keeper.ref, keeper.teamRef);
@@ -213,10 +216,12 @@ export function simulateMatch(input: SimulateInput): MatchEvent[] {
     }
   }
 
-  // Clean sheets are settled at the final whistle, never before. A manager who traded the
-  // defender away at 70' does not collect this.
+  // Emitted at the final whistle for every outfield defensive player regardless of the score,
+  // because whether it is worth anything is not a fact about the match. A clean sheet belongs to
+  // the manager who held the player through a goalless stretch of his own, and a provider has no
+  // idea who owned whom — so this says "full time, here is a shut-out candidate" and scoring
+  // decides. See `scoring/cleanSheet.ts`.
   for (const team of [home, away]) {
-    if (opponentOf(team).goals > 0) continue;
     for (const player of team.players) {
       if (player.position === 'FWD') continue;
       push(config.finalMinute, 'clean_sheet.awarded', player.ref, player.teamRef);

@@ -1,0 +1,108 @@
+{
+  "teams": [
+    {
+      "externalRef": "mock:team:int",
+      "name": "Inter",
+      "shortName": "INT",
+      "countryName": "Italy",
+      "national": false,
+      "crestUrl": null,
+      "players": [
+        { "externalRef": "mock:int:sommer", "fullName": "Yann Sommer", "position": "GK", "shirtNumber": 1, "rating": 84, "starter": true },
+        { "externalRef": "mock:int:pavard", "fullName": "Benjamin Pavard", "position": "DEF", "shirtNumber": 28, "rating": 82, "starter": true },
+        { "externalRef": "mock:int:bastoni", "fullName": "Alessandro Bastoni", "position": "DEF", "shirtNumber": 95, "rating": 86, "starter": true },
+        { "externalRef": "mock:int:devrij", "fullName": "Stefan de Vrij", "position": "DEF", "shirtNumber": 6, "rating": 79, "starter": true },
+        { "externalRef": "mock:int:dimarco", "fullName": "Federico Dimarco", "position": "DEF", "shirtNumber": 32, "rating": 84, "starter": true },
+        { "externalRef": "mock:int:barella", "fullName": "Nicolo Barella", "position": "MID", "shirtNumber": 23, "rating": 86, "starter": true },
+        { "externalRef": "mock:int:calhanoglu", "fullName": "Hakan Calhanoglu", "position": "MID", "shirtNumber": 20, "rating": 85, "starter": true },
+        { "externalRef": "mock:int:mkhitaryan", "fullName": "Henrikh Mkhitaryan", "position": "MID", "shirtNumber": 22, "rating": 81, "starter": true },
+        { "externalRef": "mock:int:lautaro", "fullName": "Lautaro Martinez", "position": "FWD", "shirtNumber": 10, "rating": 88, "starter": true },
+        { "externalRef": "mock:int:thuram", "fullName": "Marcus Thuram", "position": "FWD", "shirtNumber": 9, "rating": 85, "starter": true },
+        { "externalRef": "mock:int:taremi", "fullName": "Mehdi Taremi", "position": "FWD", "shirtNumber": 99, "rating": 80, "starter": true },
+        { "externalRef": "mock:int:martinez", "fullName": "Josep Martinez", "position": "GK", "shirtNumber": 13, "rating": 75, "starter": false },
+        { "externalRef": "mock:int:bisseck", "fullName": "Yann Bisseck", "position": "DEF", "shirtNumber": 31, "rating": 78, "starter": false },
+        { "externalRef": "mock:int:darmian", "fullName": "Matteo Darmian", "position": "DEF", "shirtNumber": 36, "rating": 77, "starter": false },
+        { "externalRef": "mock:int:zielinski", "fullName": "Piotr Zielinski", "position": "MID", "shirtNumber": 7, "rating": 82, "starter": false },
+        { "externalRef": "mock:int:arnautovic", "fullName": "Marko Arnautovic", "position": "FWD", "shirtNumber": 8, "rating": 75, "starter": false }
+      ]
+    },
+    {
+      "externalRef": "mock:team:mil",
+      "name": "AC Milan",
+      "shortName": "MIL",
+      "countryName": "Italy",
+      "national": false,
+      "crestUrl": null,
+      "players": [
+        { "externalRef": "mock:mil:maignan", "fullName": "Mike Maignan", "position": "GK", "shirtNumber": 16, "rating": 86, "starter": true },
+        { "externalRef": "mock:mil:emerson", "fullName": "Emerson Royal", "position": "DEF", "shirtNumber": 22, "rating": 76, "starter": true },
+        { "externalRef": "mock:mil:tomori", "fullName": "Fikayo Tomori", "position": "DEF", "shirtNumber": 23, "rating": 82, "starter": true },
+        { "externalRef": "mock:mil:thiaw", "fullName": "Malick Thiaw", "position": "DEF", "shirtNumber": 28, "rating": 78, "starter": true },
+        { "externalRef": "mock:mil:hernandez", "fullName": "Theo Hernandez", "position": "DEF", "shirtNumber": 19, "rating": 85, "starter": true },
+        { "externalRef": "mock:mil:fofana", "fullName": "Youssouf Fofana", "position": "MID", "shirtNumber": 29, "rating": 80, "starter": true },
+        { "externalRef": "mock:mil:reijnders", "fullName": "Tijjani Reijnders", "position": "MID", "shirtNumber": 14, "rating": 83, "starter": true },
+        { "externalRef": "mock:mil:pulisic", "fullName": "Christian Pulisic", "position": "MID", "shirtNumber": 11, "rating": 84, "starter": true },
+        { "externalRef": "mock:mil:leao", "fullName": "Rafael Leao", "position": "FWD", "shirtNumber": 10, "rating": 85, "starter": true },
+        { "externalRef": "mock:mil:morata", "fullName": "Alvaro Morata", "position": "FWD", "shirtNumber": 7, "rating": 80, "starter": true },
+        { "externalRef": "mock:mil:chukwueze", "fullName": "Samuel Chukwueze", "position": "FWD", "shirtNumber": 21, "rating": 77, "starter": true },
+        { "externalRef": "mock:mil:sportiello", "fullName": "Marco Sportiello", "position": "GK", "shirtNumber": 57, "rating": 72, "starter": false },
+        { "externalRef": "mock:mil:pavlovic", "fullName": "Strahinja Pavlovic", "position": "DEF", "shirtNumber": 31, "rating": 78, "starter": false },
+        { "externalRef": "mock:mil:calabria", "fullName": "Davide Calabria", "position": "DEF", "shirtNumber": 2, "rating": 76, "starter": false },
+        { "externalRef": "mock:mil:loftuscheek", "fullName": "Ruben Loftus-Cheek", "position": "MID", "shirtNumber": 8, "rating": 79, "starter": false },
+        { "externalRef": "mock:mil:okafor", "fullName": "Noah Okafor", "position": "FWD", "shirtNumber": 17, "rating": 76, "starter": false }
+      ]
+    },
+    {
+      "externalRef": "mock:team:juv",
+      "name": "Juventus",
+      "shortName": "JUV",
+      "countryName": "Italy",
+      "national": false,
+      "crestUrl": null,
+      "players": [
+        { "externalRef": "mock:juv:digregorio", "fullName": "Michele Di Gregorio", "position": "GK", "shirtNumber": 29, "rating": 80, "starter": true },
+        { "externalRef": "mock:juv:kalulu", "fullName": "Pierre Kalulu", "position": "DEF", "shirtNumber": 15, "rating": 79, "starter": true },
+        { "externalRef": "mock:juv:bremer", "fullName": "Gleison Bremer", "position": "DEF", "shirtNumber": 3, "rating": 86, "starter": true },
+        { "externalRef": "mock:juv:gatti", "fullName": "Federico Gatti", "position": "DEF", "shirtNumber": 4, "rating": 79, "starter": true },
+        { "externalRef": "mock:juv:cambiaso", "fullName": "Andrea Cambiaso", "position": "DEF", "shirtNumber": 27, "rating": 82, "starter": true },
+        { "externalRef": "mock:juv:locatelli", "fullName": "Manuel Locatelli", "position": "MID", "shirtNumber": 5, "rating": 80, "starter": true },
+        { "externalRef": "mock:juv:thuram", "fullName": "Khephren Thuram", "position": "MID", "shirtNumber": 19, "rating": 81, "starter": true },
+        { "externalRef": "mock:juv:koopmeiners", "fullName": "Teun Koopmeiners", "position": "MID", "shirtNumber": 8, "rating": 83, "starter": true },
+        { "externalRef": "mock:juv:gonzalez", "fullName": "Nicolas Gonzalez", "position": "FWD", "shirtNumber": 11, "rating": 81, "starter": true },
+        { "externalRef": "mock:juv:vlahovic", "fullName": "Dusan Vlahovic", "position": "FWD", "shirtNumber": 9, "rating": 84, "starter": true },
+        { "externalRef": "mock:juv:yildiz", "fullName": "Kenan Yildiz", "position": "FWD", "shirtNumber": 10, "rating": 81, "starter": true },
+        { "externalRef": "mock:juv:perin", "fullName": "Mattia Perin", "position": "GK", "shirtNumber": 36, "rating": 75, "starter": false },
+        { "externalRef": "mock:juv:danilo", "fullName": "Danilo", "position": "DEF", "shirtNumber": 6, "rating": 78, "starter": false },
+        { "externalRef": "mock:juv:cabal", "fullName": "Juan Cabal", "position": "DEF", "shirtNumber": 32, "rating": 74, "starter": false },
+        { "externalRef": "mock:juv:mckennie", "fullName": "Weston McKennie", "position": "MID", "shirtNumber": 16, "rating": 78, "starter": false },
+        { "externalRef": "mock:juv:weah", "fullName": "Timothy Weah", "position": "FWD", "shirtNumber": 22, "rating": 77, "starter": false }
+      ]
+    },
+    {
+      "externalRef": "mock:team:nap",
+      "name": "Napoli",
+      "shortName": "NAP",
+      "countryName": "Italy",
+      "national": false,
+      "crestUrl": null,
+      "players": [
+        { "externalRef": "mock:nap:meret", "fullName": "Alex Meret", "position": "GK", "shirtNumber": 1, "rating": 81, "starter": true },
+        { "externalRef": "mock:nap:dilorenzo", "fullName": "Giovanni Di Lorenzo", "position": "DEF", "shirtNumber": 22, "rating": 84, "starter": true },
+        { "externalRef": "mock:nap:rrahmani", "fullName": "Amir Rrahmani", "position": "DEF", "shirtNumber": 13, "rating": 81, "starter": true },
+        { "externalRef": "mock:nap:buongiorno", "fullName": "Alessandro Buongiorno", "position": "DEF", "shirtNumber": 4, "rating": 83, "starter": true },
+        { "externalRef": "mock:nap:olivera", "fullName": "Mathias Olivera", "position": "DEF", "shirtNumber": 17, "rating": 79, "starter": true },
+        { "externalRef": "mock:nap:lobotka", "fullName": "Stanislav Lobotka", "position": "MID", "shirtNumber": 68, "rating": 84, "starter": true },
+        { "externalRef": "mock:nap:anguissa", "fullName": "Frank Anguissa", "position": "MID", "shirtNumber": 99, "rating": 83, "starter": true },
+        { "externalRef": "mock:nap:mctominay", "fullName": "Scott McTominay", "position": "MID", "shirtNumber": 8, "rating": 82, "starter": true },
+        { "externalRef": "mock:nap:politano", "fullName": "Matteo Politano", "position": "FWD", "shirtNumber": 21, "rating": 80, "starter": true },
+        { "externalRef": "mock:nap:lukaku", "fullName": "Romelu Lukaku", "position": "FWD", "shirtNumber": 11, "rating": 84, "starter": true },
+        { "externalRef": "mock:nap:kvaratskhelia", "fullName": "Khvicha Kvaratskhelia", "position": "FWD", "shirtNumber": 77, "rating": 87, "starter": true },
+        { "externalRef": "mock:nap:caprile", "fullName": "Elia Caprile", "position": "GK", "shirtNumber": 25, "rating": 73, "starter": false },
+        { "externalRef": "mock:nap:juanjesus", "fullName": "Juan Jesus", "position": "DEF", "shirtNumber": 5, "rating": 75, "starter": false },
+        { "externalRef": "mock:nap:spinazzola", "fullName": "Leonardo Spinazzola", "position": "DEF", "shirtNumber": 37, "rating": 78, "starter": false },
+        { "externalRef": "mock:nap:gilmour", "fullName": "Billy Gilmour", "position": "MID", "shirtNumber": 6, "rating": 77, "starter": false },
+        { "externalRef": "mock:nap:raspadori", "fullName": "Giacomo Raspadori", "position": "FWD", "shirtNumber": 81, "rating": 79, "starter": false }
+      ]
+    }
+  ]
+}

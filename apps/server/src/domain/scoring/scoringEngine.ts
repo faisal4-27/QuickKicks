@@ -4,16 +4,18 @@ import {
   type Player,
   type PowerUpKind,
   type ScoringRules,
+  cleanSheetClaimant,
+  concededMinutes,
   isScoringEvent,
   scoreEvent,
 } from '@quickkicks/shared';
 import { and, eq, gt, lte } from 'drizzle-orm';
 import { db } from '../../db/client.js';
-import { matchEvents, powerUps, scoreEntries } from '../../db/schema.js';
+import { matchEvents, players, powerUps, rosterSlots, scoreEntries } from '../../db/schema.js';
 import { redis } from '../../redis/client.js';
 import { keys } from '../../redis/keys.js';
 import { activeKindsFor } from '../powerups/powerUpState.js';
-import { isFeedWorthy } from '../room/snapshot.js';
+import { isFeedWorthyAward } from '../room/snapshot.js';
 
 export interface IngestContext {
   roomId: string;
@@ -49,7 +51,11 @@ export async function ingestEvent(
   const goal =
     event.type === 'goal.scored' ? (event.teamRef === ctx.homeTeamRef ? 'home' : 'away') : null;
 
-  const ownerId = player ? await currentOwner(ctx.roomId, player.id) : null;
+  const ownerId = player
+    ? event.type === 'clean_sheet.awarded'
+      ? await cleanSheetOwner(ctx, player, event.minute)
+      : await currentOwner(ctx.roomId, player.id)
+    : null;
   const activeKinds: PowerUpKind[] =
     ownerId && player ? await activeKindsFor(ctx.roomId, ownerId, player.id, event.minute) : [];
 
@@ -107,7 +113,8 @@ export async function ingestEvent(
     touched.push(ownerId);
   }
 
-  const feedItem: FeedItem | null = isFeedWorthy(event.type)
+  const paid = ownerId !== null && scored.awardedPoints !== 0;
+  const feedItem: FeedItem | null = isFeedWorthyAward(event.type, paid)
     ? {
         id: written.id,
         minute: event.minute,
@@ -116,7 +123,7 @@ export async function ingestEvent(
         playerName: player?.fullName ?? null,
         position: player?.position ?? null,
         awards:
-          ownerId && scored.awardedPoints !== 0
+          paid && ownerId
             ? [
                 {
                   memberId: ownerId,
@@ -129,6 +136,54 @@ export async function ingestEvent(
     : null;
 
   return { feedItem, touchedMemberIds: touched, goal, minute: event.minute };
+}
+
+/**
+ * Who earned this player's clean sheet, or nobody.
+ *
+ * The one event that cannot be settled by asking who owns the player right now: it belongs to
+ * whoever held him through a long enough goalless stretch, which takes the whole ownership
+ * timeline and the minutes his team conceded. Both are read from Postgres rather than carried in
+ * the clock's memory, because a restart mid-match resumes the provider from its last sequence and
+ * never sees the earlier goals again.
+ */
+async function cleanSheetOwner(
+  ctx: IngestContext,
+  player: Player,
+  finalMinute: number,
+): Promise<string | null> {
+  const [slots, goals] = await Promise.all([
+    db
+      .select({
+        memberId: rosterSlots.memberId,
+        acquiredAtMinute: rosterSlots.acquiredAtMinute,
+        releasedAtMinute: rosterSlots.releasedAtMinute,
+      })
+      .from(rosterSlots)
+      .where(and(eq(rosterSlots.roomId, ctx.roomId), eq(rosterSlots.playerId, player.id))),
+    db
+      .select({ minute: matchEvents.matchMinute, teamId: players.teamId })
+      .from(matchEvents)
+      .innerJoin(players, eq(matchEvents.playerId, players.id))
+      .where(and(eq(matchEvents.roomId, ctx.roomId), eq(matchEvents.type, 'goal.scored'))),
+  ]);
+
+  return cleanSheetClaimant({
+    // The player's row id stands in for the provider ref here; the rule only needs a stable key.
+    stints: slots.map((slot) => ({
+      memberId: slot.memberId,
+      playerRef: player.id,
+      fromMinute: slot.acquiredAtMinute,
+      toMinute: slot.releasedAtMinute,
+    })),
+    playerRef: player.id,
+    concededMinutes: concededMinutes(
+      goals.map((goal) => ({ minute: goal.minute, teamRef: goal.teamId })),
+      player.teamId,
+    ),
+    finalMinute,
+    config: ctx.rules.cleanSheet,
+  });
 }
 
 /** The power-up that actually boosted this event, for the ledger audit trail. */

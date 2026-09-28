@@ -1,5 +1,5 @@
 import type { ScoringRules } from '../scoring/rules.js';
-import type { DraftConfig, Player, Team } from './entities.js';
+import type { Competition, DraftConfig, Player, Team } from './entities.js';
 import type {
   AcquisitionSource,
   MatchEventType,
@@ -38,11 +38,18 @@ export interface FixtureView {
   id: string;
   homeTeam: Team;
   awayTeam: Team;
-  competition: string | null;
-  /** ISO timestamp, or null for a simulated fixture with no real kickoff. */
-  kickoffAt: string | null;
+  competition: Competition;
+  /** Free text from the provider, e.g. "Regular Season - 12". */
+  round: string | null;
+  /** ISO timestamp. Always set: the host screen groups fixtures by the day they kick off on. */
+  kickoffAt: string;
   /** The draft cannot start until this is true: the pool is the announced starting XIs. */
   lineupsAnnounced: boolean;
+  /**
+   * ISO timestamp the XIs are expected, or when they actually landed once announced. An estimate
+   * until then — see `LINEUP_RELEASE_LEAD_MINUTES`.
+   */
+  lineupsExpectedAt: string;
 }
 
 export interface MemberView {

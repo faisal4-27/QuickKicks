@@ -4,6 +4,7 @@ import {
   type MatchEvent,
   type MatchEventType,
   type Position,
+  cleanSheetClaimant,
   formatPoints,
   roundPoints,
   scoreEvent,
@@ -42,11 +43,22 @@ interface PlayerTally {
 
 function tally(events: readonly MatchEvent[], seed: ReturnType<typeof lineupFromSeed>) {
   const byRef = new Map<string, PlayerTally>();
+  const goalMinutesByTeam = new Map<string, number[]>();
+  for (const event of events) {
+    if (event.type !== 'goal.scored') continue;
+    const minutes = goalMinutesByTeam.get(event.teamRef) ?? [];
+    minutes.push(event.minute);
+    goalMinutesByTeam.set(event.teamRef, minutes);
+  }
 
   for (const event of events) {
     if (!event.playerRef) continue;
     const position = seed.positions[event.playerRef];
     if (!position) continue;
+    // The provider offers a clean sheet for every defensive player and leaves the judging to
+    // scoring, which needs ownership. There are no managers here, so the CLI measures the player's
+    // ceiling: one notional manager who drafted him and held him to the whistle.
+    if (event.type === 'clean_sheet.awarded' && !keptCleanSheet(event, goalMinutesByTeam)) continue;
 
     const entry =
       byRef.get(event.playerRef) ??
@@ -66,6 +78,23 @@ function tally(events: readonly MatchEvent[], seed: ReturnType<typeof lineupFrom
   }
 
   return byRef;
+}
+
+/** The real rule, asked on behalf of a manager who owned the player for the whole match. */
+function keptCleanSheet(event: MatchEvent, goalMinutesByTeam: Map<string, number[]>): boolean {
+  const conceded = [...goalMinutesByTeam.entries()]
+    .filter(([teamRef]) => teamRef !== event.teamRef)
+    .flatMap(([, minutes]) => minutes);
+  const owner = cleanSheetClaimant({
+    stints: [
+      { memberId: 'sim', playerRef: event.playerRef ?? '', fromMinute: 0, toMinute: null },
+    ],
+    playerRef: event.playerRef ?? '',
+    concededMinutes: conceded,
+    finalMinute: event.minute,
+    config: DEFAULT_SCORING_RULES.cleanSheet,
+  });
+  return owner !== null;
 }
 
 function pad(value: string, width: number): string {

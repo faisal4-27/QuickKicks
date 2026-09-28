@@ -43,12 +43,22 @@ export interface TradeConfig {
   cutoffMinute: number;
 }
 
+export interface CleanSheetConfig {
+  /**
+   * Match-minutes a manager must have owned the player, summed across every stint they held.
+   * Deliberately above half a match: because two qualifying stints cannot fit inside 90 minutes,
+   * at most one manager can ever claim a given player's clean sheet.
+   */
+  minMinutesOwned: number;
+}
+
 export interface ScoringRules {
   version: number;
   base: Record<MatchEventType, PointValue>;
   powerUps: PowerUpConfig;
   swaps: SwapConfig;
   trades: TradeConfig;
+  cleanSheet: CleanSheetConfig;
 }
 
 /**
@@ -64,9 +74,16 @@ export interface ScoringRules {
  *
  * v2 keeps v1's ratios but puts them on a whole-number scale anchored at 1 point per completed
  * pass (v1 x20), so every total a manager sees is an integer.
+ *
+ * v3 prices scarcity by position rather than treating a contribution as worth the same wherever it
+ * came from: a defender's goal and a keeper's assist pay more than a forward's because they almost
+ * never happen, and a save is a keeper's stat alone. It also stops paying a shot on target when
+ * that shot went in — see the one-scoring-event-per-shot rule in CLAUDE.md — and makes the clean
+ * sheet something a manager earns over a stretch of ownership rather than by holding a player at
+ * the whistle (`cleanSheet.minMinutesOwned`, and `scoring/cleanSheet.ts` for the rule).
  */
 export const DEFAULT_SCORING_RULES: ScoringRules = {
-  version: 2,
+  version: 3,
   base: {
     'pass.completed': 1,
     'pass.missed': -1,
@@ -75,9 +92,11 @@ export const DEFAULT_SCORING_RULES: ScoringRules = {
     'foul.committed': -10,
     'shot.on_target': 50,
     'shot.off_target': 0,
-    'goal.scored': { default: 180, DEF: 200, GK: 240 },
-    assist: 90,
-    save: 40,
+    'goal.scored': { default: 180, FWD: 150, DEF: 210, GK: 240 },
+    // Rarer the further back you start: a keeper who registers one has done something absurd.
+    assist: { default: 90, DEF: 120, GK: 150 },
+    // Outfield players do not make saves. A real feed that says otherwise pays nothing for it.
+    save: { default: 0, GK: 50 },
     'goal.conceded': { default: 0, DEF: -10, GK: -15 },
     'card.yellow': -20,
     'card.red': -60,
@@ -103,6 +122,9 @@ export const DEFAULT_SCORING_RULES: ScoringRules = {
   trades: {
     offerExpiryMinutes: 3,
     cutoffMinute: 75,
+  },
+  cleanSheet: {
+    minMinutesOwned: 60,
   },
 };
 

@@ -17,6 +17,8 @@
     "migrate": "npm run migrate --workspace @quickkicks/server",
     "seed": "npm run seed --workspace @quickkicks/server",
     "setup": "npm run services:up && npm run migrate && npm run seed",
+    "build": "npm run build --workspace @quickkicks/web",
+    "start": "npm run start --workspace @quickkicks/server",
     "dev": "concurrently -n server,web -c cyan,magenta \"npm:dev:server\" \"npm:dev:web\"",
     "dev:server": "npm run dev --workspace @quickkicks/server",
     "dev:web": "npm run dev --workspace @quickkicks/web",
@@ -29,7 +31,6 @@
   "devDependencies": {
     "@types/node": "^22.10.2",
     "concurrently": "^9.1.2",
-    "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
   }

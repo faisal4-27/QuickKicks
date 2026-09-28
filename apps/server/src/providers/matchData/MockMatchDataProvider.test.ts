@@ -77,24 +77,54 @@ describe('simulated matches', () => {
     }
   });
 
-  it('only awards a clean sheet to a side that conceded nothing, and only at the whistle', () => {
+  it('offers every non-forward as a clean sheet candidate at the whistle, whatever the score', () => {
+    // The provider does not judge clean sheets, because whether one is worth anything depends on
+    // who owned the player and for how long — see `scoring/cleanSheet.ts`. It reports full time
+    // and lets scoring decide, so the count here is the same in a 0-0 and a 4-3.
+    // Starters only: the bench never takes the pitch in a simulated match, so it keeps no clean
+    // sheet either. That is also why the bench is not in the draft pool.
+    const defensive = [...seed.lineup.home.players, ...seed.lineup.away.players].filter(
+      (p) => p.isStarter && p.position !== 'FWD',
+    );
+    const forwardRefs = new Set(
+      [...seed.lineup.home.players, ...seed.lineup.away.players]
+        .filter((p) => p.position === 'FWD')
+        .map((p) => p.playerRef),
+    );
+
     for (const seedValue of ['cs1', 'cs2', 'cs3', 'cs4', 'cs5']) {
       const events = provider(seedValue).allEvents();
       const cleanSheets = events.filter((e) => e.type === 'clean_sheet.awarded');
-      for (const awarded of cleanSheets) {
-        expect(awarded.minute).toBe(90);
-        const conceded = events.some(
-          (e) => e.type === 'goal.scored' && e.teamRef !== awarded.teamRef,
-        );
-        expect(conceded).toBe(false);
-      }
-      // Forwards never collect a clean sheet.
-      const forwardRefs = new Set(
-        [...seed.lineup.home.players, ...seed.lineup.away.players]
-          .filter((p) => p.position === 'FWD')
-          .map((p) => p.playerRef),
-      );
+
+      expect(cleanSheets.length).toBe(defensive.length);
+      expect(cleanSheets.every((e) => e.minute === 90)).toBe(true);
       expect(cleanSheets.some((e) => forwardRefs.has(e.playerRef))).toBe(false);
+      // One candidate per player, so scoring never has two shots at paying the same clean sheet.
+      expect(new Set(cleanSheets.map((e) => e.playerRef)).size).toBe(defensive.length);
+    }
+  });
+
+  it('pays a shot that goes in once, as the goal', () => {
+    for (const seedValue of ['s1', 's2', 's3', 's4', 's5']) {
+      const p = provider(seedValue);
+      const events = p.allEvents();
+      const snapshot = p.snapshotAt(90);
+      let scored = 0;
+
+      for (const [ref, line] of Object.entries(snapshot.perPlayer)) {
+        const onTarget = events.filter(
+          (e) => e.type === 'shot.on_target' && e.playerRef === ref,
+        ).length;
+        const goals = events.filter((e) => e.type === 'goal.scored' && e.playerRef === ref).length;
+
+        // The stat line counts a goal as a shot on target; the stream emits only the goal, so a
+        // scorer is never handed both events for the same shot.
+        expect(line.goals).toBe(goals);
+        expect(line.shotsOnTarget).toBe(onTarget + goals);
+        scored += goals;
+      }
+
+      expect(scored).toBeGreaterThan(0);
     }
   });
 

@@ -1,0 +1,56 @@
+{
+  "teams": [
+    {
+      "externalRef": "mock:team:ars",
+      "name": "Arsenal",
+      "shortName": "ARS",
+      "countryName": "England",
+      "national": false,
+      "crestUrl": null,
+      "players": [
+        { "externalRef": "mock:ars:raya", "fullName": "David Raya", "position": "GK", "shirtNumber": 1, "rating": 84, "starter": true },
+        { "externalRef": "mock:ars:timber", "fullName": "Jurrien Timber", "position": "DEF", "shirtNumber": 12, "rating": 84, "starter": true },
+        { "externalRef": "mock:ars:saliba", "fullName": "William Saliba", "position": "DEF", "shirtNumber": 2, "rating": 87, "starter": true },
+        { "externalRef": "mock:ars:magalhaes", "fullName": "Gabriel Magalhaes", "position": "DEF", "shirtNumber": 6, "rating": 86, "starter": true },
+        { "externalRef": "mock:ars:calafiori", "fullName": "Riccardo Calafiori", "position": "DEF", "shirtNumber": 33, "rating": 81, "starter": true },
+        { "externalRef": "mock:ars:rice", "fullName": "Declan Rice", "position": "MID", "shirtNumber": 41, "rating": 87, "starter": true },
+        { "externalRef": "mock:ars:zubimendi", "fullName": "Martin Zubimendi", "position": "MID", "shirtNumber": 36, "rating": 85, "starter": true },
+        { "externalRef": "mock:ars:odegaard", "fullName": "Martin Odegaard", "position": "MID", "shirtNumber": 8, "rating": 86, "starter": true },
+        { "externalRef": "mock:ars:saka", "fullName": "Bukayo Saka", "position": "FWD", "shirtNumber": 7, "rating": 89, "starter": true },
+        { "externalRef": "mock:ars:havertz", "fullName": "Kai Havertz", "position": "FWD", "shirtNumber": 29, "rating": 82, "starter": true },
+        { "externalRef": "mock:ars:martinelli", "fullName": "Gabriel Martinelli", "position": "FWD", "shirtNumber": 11, "rating": 82, "starter": true },
+        { "externalRef": "mock:ars:kepa", "fullName": "Kepa Arrizabalaga", "position": "GK", "shirtNumber": 31, "rating": 76, "starter": false },
+        { "externalRef": "mock:ars:white", "fullName": "Ben White", "position": "DEF", "shirtNumber": 4, "rating": 83, "starter": false },
+        { "externalRef": "mock:ars:lewis-skelly", "fullName": "Myles Lewis-Skelly", "position": "DEF", "shirtNumber": 49, "rating": 78, "starter": false },
+        { "externalRef": "mock:ars:merino", "fullName": "Mikel Merino", "position": "MID", "shirtNumber": 23, "rating": 82, "starter": false },
+        { "externalRef": "mock:ars:trossard", "fullName": "Leandro Trossard", "position": "FWD", "shirtNumber": 19, "rating": 82, "starter": false }
+      ]
+    },
+    {
+      "externalRef": "mock:team:mci",
+      "name": "Manchester City",
+      "shortName": "MCI",
+      "countryName": "England",
+      "national": false,
+      "crestUrl": null,
+      "players": [
+        { "externalRef": "mock:mci:ederson", "fullName": "Ederson", "position": "GK", "shirtNumber": 31, "rating": 85, "starter": true },
+        { "externalRef": "mock:mci:dias", "fullName": "Ruben Dias", "position": "DEF", "shirtNumber": 3, "rating": 86, "starter": true },
+        { "externalRef": "mock:mci:gvardiol", "fullName": "Josko Gvardiol", "position": "DEF", "shirtNumber": 24, "rating": 84, "starter": true },
+        { "externalRef": "mock:mci:ake", "fullName": "Nathan Ake", "position": "DEF", "shirtNumber": 6, "rating": 81, "starter": true },
+        { "externalRef": "mock:mci:lewis", "fullName": "Rico Lewis", "position": "DEF", "shirtNumber": 82, "rating": 78, "starter": true },
+        { "externalRef": "mock:mci:rodri", "fullName": "Rodri", "position": "MID", "shirtNumber": 16, "rating": 90, "starter": true },
+        { "externalRef": "mock:mci:bernardo-silva", "fullName": "Bernardo Silva", "position": "MID", "shirtNumber": 20, "rating": 85, "starter": true },
+        { "externalRef": "mock:mci:foden", "fullName": "Phil Foden", "position": "MID", "shirtNumber": 47, "rating": 87, "starter": true },
+        { "externalRef": "mock:mci:haaland", "fullName": "Erling Haaland", "position": "FWD", "shirtNumber": 9, "rating": 91, "starter": true },
+        { "externalRef": "mock:mci:savinho", "fullName": "Savinho", "position": "FWD", "shirtNumber": 26, "rating": 81, "starter": true },
+        { "externalRef": "mock:mci:doku", "fullName": "Jeremy Doku", "position": "FWD", "shirtNumber": 11, "rating": 82, "starter": true },
+        { "externalRef": "mock:mci:ortega", "fullName": "Stefan Ortega", "position": "GK", "shirtNumber": 18, "rating": 78, "starter": false },
+        { "externalRef": "mock:mci:stones", "fullName": "John Stones", "position": "DEF", "shirtNumber": 5, "rating": 82, "starter": false },
+        { "externalRef": "mock:mci:akanji", "fullName": "Manuel Akanji", "position": "DEF", "shirtNumber": 25, "rating": 82, "starter": false },
+        { "externalRef": "mock:mci:kovacic", "fullName": "Mateo Kovacic", "position": "MID", "shirtNumber": 8, "rating": 83, "starter": false },
+        { "externalRef": "mock:mci:marmoush", "fullName": "Omar Marmoush", "position": "FWD", "shirtNumber": 7, "rating": 82, "starter": false }
+      ]
+    }
+  ]
+}

@@ -49,6 +49,23 @@ export type AcquisitionSource = (typeof ACQUISITION_SOURCES)[number];
 export const MATCH_STATUSES = ['scheduled', 'live', 'half_time', 'finished'] as const;
 export type MatchStatus = (typeof MATCH_STATUSES)[number];
 
+/** API-Football's two competition types, lowercased. */
+export const COMPETITION_TYPES = ['league', 'cup'] as const;
+export type CompetitionType = (typeof COMPETITION_TYPES)[number];
+
+/**
+ * How long before kickoff the starting XIs are expected. Real lineups land roughly an hour out,
+ * and no feed publishes the release time, so the host screen counts down to this estimate and
+ * then switches to the announcement it actually received.
+ */
+export const LINEUP_RELEASE_LEAD_MINUTES = 60;
+
+/**
+ * Continental and international competitions have no country of their own. API-Football reports
+ * them under this name with a null code and flag, and the fixture browser groups them under it.
+ */
+export const WORLD_COUNTRY_NAME = 'World';
+
 export const POWER_UP_LABELS: Record<PowerUpKind, string> = {
   double_passes: 'Double Passes',
   double_goals: 'Double Goals',

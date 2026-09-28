@@ -51,6 +51,15 @@ export function isFeedWorthy(type: MatchEventType): boolean {
   return !FEED_EXCLUDED_TYPES.includes(type);
 }
 
+/**
+ * The feed test for events whose interest depends on whether they paid out. A clean sheet is
+ * offered at full time for every defensive player on the pitch and most go unclaimed, so the event
+ * on its own is not news — twenty-two of them in a 3-3 would bury the goals that decided the match.
+ */
+export function isFeedWorthyAward(type: MatchEventType, paid: boolean): boolean {
+  return isFeedWorthy(type) && (type !== 'clean_sheet.awarded' || paid);
+}
+
 export class RoomNotFoundError extends Error {
   constructor(idOrCode: string) {
     super(`Room not found: ${idOrCode}`);
@@ -108,8 +117,10 @@ async function loadFeed(roomId: string, playersById: Map<string, Player>): Promi
     .orderBy(desc(matchEvents.sequence))
     .limit(400);
 
-  const worthy = events.filter((e) => isFeedWorthy(e.type)).slice(0, FEED_LIMIT);
-  if (worthy.length === 0) return [];
+  // Awards are resolved before the limit is applied, because whether an event belongs in the feed
+  // at all can depend on whether it paid anybody.
+  const candidates = events.filter((e) => isFeedWorthy(e.type));
+  if (candidates.length === 0) return [];
 
   const entries = await db
     .select()
@@ -119,7 +130,7 @@ async function loadFeed(roomId: string, playersById: Map<string, Player>): Promi
         eq(scoreEntries.roomId, roomId),
         inArray(
           scoreEntries.matchEventId,
-          worthy.map((e) => e.id),
+          candidates.map((e) => e.id),
         ),
       ),
     );
@@ -135,6 +146,10 @@ async function loadFeed(roomId: string, playersById: Map<string, Player>): Promi
     });
     awardsByEvent.set(entry.matchEventId, list);
   }
+
+  const worthy = candidates
+    .filter((e) => isFeedWorthyAward(e.type, awardsByEvent.has(e.id)))
+    .slice(0, FEED_LIMIT);
 
   return worthy.map((event) => {
     const player = event.playerId ? playersById.get(event.playerId) : undefined;
@@ -286,7 +301,7 @@ export async function buildRoomSnapshot(roomId: string): Promise<RoomSnapshot> {
       msPerMatchMinute: room.msPerMatchMinute,
       scoringRules: rules,
     },
-    fixture: fixtureView(catalog.fixture, catalog.homeTeam, catalog.awayTeam),
+    fixture: fixtureView(catalog.fixture, catalog.homeTeam, catalog.awayTeam, catalog.competition),
     players: allPlayers,
     members: memberViews,
     draft: {

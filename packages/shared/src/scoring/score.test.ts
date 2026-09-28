@@ -11,13 +11,34 @@ describe('basePointsFor', () => {
   });
 
   it('prefers a positional value over the default', () => {
-    expect(basePointsFor('goal.scored', 'FWD', rules)).toBe(180);
+    expect(basePointsFor('goal.scored', 'FWD', rules)).toBe(150);
+    expect(basePointsFor('goal.scored', 'DEF', rules)).toBe(210);
     expect(basePointsFor('goal.scored', 'GK', rules)).toBe(240);
   });
 
   it('falls back to the default for positions that are not named', () => {
     expect(basePointsFor('clean_sheet.awarded', 'FWD', rules)).toBe(0);
     expect(basePointsFor('clean_sheet.awarded', 'GK', rules)).toBe(120);
+  });
+
+  it('pays a contribution by how scarce it is for the position', () => {
+    // A goal is worth least to the player most likely to score one.
+    expect(basePointsFor('goal.scored', 'MID', rules)).toBe(180);
+    expect(basePointsFor('goal.scored', 'FWD', rules)).toBeLessThan(
+      basePointsFor('goal.scored', 'DEF', rules),
+    );
+    // Same shape for assists, which get rarer the further back the player starts.
+    expect(basePointsFor('assist', 'FWD', rules)).toBe(90);
+    expect(basePointsFor('assist', 'MID', rules)).toBe(90);
+    expect(basePointsFor('assist', 'DEF', rules)).toBe(120);
+    expect(basePointsFor('assist', 'GK', rules)).toBe(150);
+  });
+
+  it('treats a save as a keeper stat and nobody else', () => {
+    expect(basePointsFor('save', 'GK', rules)).toBe(50);
+    for (const position of ['DEF', 'MID', 'FWD'] as const) {
+      expect(basePointsFor('save', position, rules), position).toBe(0);
+    }
   });
 });
 
@@ -76,9 +97,9 @@ describe('resolveMultiplier', () => {
 describe('scoreEvent', () => {
   it('splits base points from the multiplier, which is what the ledger stores', () => {
     expect(scoreEvent('goal.scored', 'FWD', ['double_goals'], rules)).toEqual({
-      basePoints: 180,
+      basePoints: 150,
       multiplier: 2,
-      awardedPoints: 360,
+      awardedPoints: 300,
     });
   });
 

@@ -136,6 +136,9 @@ export class MockMatchDataProvider implements DrivableMatchDataProvider {
         case 'clean_sheet.awarded': line.cleanSheet = true; break;
         case 'goal.scored':
           line.goals += 1;
+          // A goal was a shot on target. The stream does not emit one for it — that would score
+          // the shot twice — so the stat line adds it back here.
+          line.shotsOnTarget += 1;
           if (event.teamRef === this.lineup.home.teamRef) home += 1;
           else away += 1;
           break;

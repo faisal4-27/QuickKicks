@@ -1,0 +1,204 @@
+{
+  "fixtures": [
+    {
+      "externalRef": "mock:fixture:che-liv",
+      "competitionRef": "apifootball:league:39",
+      "homeTeamRef": "mock:team:che",
+      "awayTeamRef": "mock:team:liv",
+      "round": "Regular Season - 12",
+      "dayOffset": 0,
+      "kickoffTime": "16:30",
+      "lineupsAnnounced": true
+    },
+    {
+      "externalRef": "mock:fixture:ars-mci",
+      "competitionRef": "apifootball:league:39",
+      "homeTeamRef": "mock:team:ars",
+      "awayTeamRef": "mock:team:mci",
+      "round": "Regular Season - 12",
+      "dayOffset": 0,
+      "kickoffTime": "19:00",
+      "lineupsAnnounced": false
+    },
+    {
+      "externalRef": "mock:fixture:rma-atm",
+      "competitionRef": "apifootball:league:140",
+      "homeTeamRef": "mock:team:rma",
+      "awayTeamRef": "mock:team:atm",
+      "round": "Regular Season - 11",
+      "dayOffset": 0,
+      "kickoffTime": "20:00",
+      "lineupsAnnounced": false
+    },
+    {
+      "externalRef": "mock:fixture:int-juv",
+      "competitionRef": "apifootball:league:135",
+      "homeTeamRef": "mock:team:int",
+      "awayTeamRef": "mock:team:juv",
+      "round": "Regular Season - 11",
+      "dayOffset": 0,
+      "kickoffTime": "19:45",
+      "lineupsAnnounced": false
+    },
+    {
+      "externalRef": "mock:fixture:liv-che",
+      "competitionRef": "apifootball:league:39",
+      "homeTeamRef": "mock:team:liv",
+      "awayTeamRef": "mock:team:che",
+      "round": "Regular Season - 13",
+      "dayOffset": 1,
+      "kickoffTime": "15:00",
+      "lineupsAnnounced": false
+    },
+    {
+      "externalRef": "mock:fixture:bay-bvb",
+      "competitionRef": "apifootball:league:78",
+      "homeTeamRef": "mock:team:bay",
+      "awayTeamRef": "mock:team:bvb",
+      "round": "Regular Season - 10",
+      "dayOffset": 1,
+      "kickoffTime": "17:30",
+      "lineupsAnnounced": false
+    },
+    {
+      "externalRef": "mock:fixture:fcb-ath",
+      "competitionRef": "apifootball:league:140",
+      "homeTeamRef": "mock:team:fcb",
+      "awayTeamRef": "mock:team:ath",
+      "round": "Regular Season - 11",
+      "dayOffset": 1,
+      "kickoffTime": "21:00",
+      "lineupsAnnounced": false
+    },
+    {
+      "externalRef": "mock:fixture:psg-mar",
+      "competitionRef": "apifootball:league:61",
+      "homeTeamRef": "mock:team:psg",
+      "awayTeamRef": "mock:team:mar",
+      "round": "Regular Season - 12",
+      "dayOffset": 1,
+      "kickoffTime": "20:45",
+      "lineupsAnnounced": false
+    },
+    {
+      "externalRef": "mock:fixture:rma-mci",
+      "competitionRef": "apifootball:league:2",
+      "homeTeamRef": "mock:team:rma",
+      "awayTeamRef": "mock:team:mci",
+      "round": "League Phase - 4",
+      "dayOffset": 2,
+      "kickoffTime": "20:00",
+      "lineupsAnnounced": false
+    },
+    {
+      "externalRef": "mock:fixture:bay-int",
+      "competitionRef": "apifootball:league:2",
+      "homeTeamRef": "mock:team:bay",
+      "awayTeamRef": "mock:team:int",
+      "round": "League Phase - 4",
+      "dayOffset": 2,
+      "kickoffTime": "20:00",
+      "lineupsAnnounced": false
+    },
+    {
+      "externalRef": "mock:fixture:liv-psg",
+      "competitionRef": "apifootball:league:2",
+      "homeTeamRef": "mock:team:liv",
+      "awayTeamRef": "mock:team:psg",
+      "round": "League Phase - 4",
+      "dayOffset": 2,
+      "kickoffTime": "20:00",
+      "lineupsAnnounced": false
+    },
+    {
+      "externalRef": "mock:fixture:mil-lil",
+      "competitionRef": "apifootball:league:3",
+      "homeTeamRef": "mock:team:mil",
+      "awayTeamRef": "mock:team:lil",
+      "round": "League Phase - 4",
+      "dayOffset": 3,
+      "kickoffTime": "18:45",
+      "lineupsAnnounced": false
+    },
+    {
+      "externalRef": "mock:fixture:lev-mar",
+      "competitionRef": "apifootball:league:3",
+      "homeTeamRef": "mock:team:lev",
+      "awayTeamRef": "mock:team:mar",
+      "round": "League Phase - 4",
+      "dayOffset": 3,
+      "kickoffTime": "21:00",
+      "lineupsAnnounced": false
+    },
+    {
+      "externalRef": "mock:fixture:mon-ath",
+      "competitionRef": "apifootball:league:848",
+      "homeTeamRef": "mock:team:mon",
+      "awayTeamRef": "mock:team:ath",
+      "round": "League Phase - 4",
+      "dayOffset": 3,
+      "kickoffTime": "21:00",
+      "lineupsAnnounced": false
+    },
+    {
+      "externalRef": "mock:fixture:eng-fra",
+      "competitionRef": "apifootball:league:5",
+      "homeTeamRef": "mock:team:eng",
+      "awayTeamRef": "mock:team:fra",
+      "round": "League A - Group 2",
+      "dayOffset": 4,
+      "kickoffTime": "19:45",
+      "lineupsAnnounced": false
+    },
+    {
+      "externalRef": "mock:fixture:esp-bra",
+      "competitionRef": "apifootball:league:10",
+      "homeTeamRef": "mock:team:esp",
+      "awayTeamRef": "mock:team:bra",
+      "round": "Friendly",
+      "dayOffset": 4,
+      "kickoffTime": "20:00",
+      "lineupsAnnounced": false
+    },
+    {
+      "externalRef": "mock:fixture:mci-che",
+      "competitionRef": "apifootball:league:39",
+      "homeTeamRef": "mock:team:mci",
+      "awayTeamRef": "mock:team:che",
+      "round": "Regular Season - 14",
+      "dayOffset": 5,
+      "kickoffTime": "12:30",
+      "lineupsAnnounced": false
+    },
+    {
+      "externalRef": "mock:fixture:rbl-lev",
+      "competitionRef": "apifootball:league:78",
+      "homeTeamRef": "mock:team:rbl",
+      "awayTeamRef": "mock:team:lev",
+      "round": "Regular Season - 11",
+      "dayOffset": 5,
+      "kickoffTime": "15:30",
+      "lineupsAnnounced": false
+    },
+    {
+      "externalRef": "mock:fixture:mon-lil",
+      "competitionRef": "apifootball:league:61",
+      "homeTeamRef": "mock:team:mon",
+      "awayTeamRef": "mock:team:lil",
+      "round": "Regular Season - 13",
+      "dayOffset": 5,
+      "kickoffTime": "17:00",
+      "lineupsAnnounced": false
+    },
+    {
+      "externalRef": "mock:fixture:nap-mil",
+      "competitionRef": "apifootball:league:135",
+      "homeTeamRef": "mock:team:nap",
+      "awayTeamRef": "mock:team:mil",
+      "round": "Regular Season - 12",
+      "dayOffset": 5,
+      "kickoffTime": "20:45",
+      "lineupsAnnounced": false
+    }
+  ]
+}

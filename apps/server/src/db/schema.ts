@@ -1,5 +1,6 @@
 import type {
   AcquisitionSource,
+  CompetitionType,
   DraftConfig,
   MatchEventType,
   MatchStatus,
@@ -33,6 +34,31 @@ export const users = pgTable('users', {
   createdAt: createdAt(),
 });
 
+/**
+ * A competition, shaped after API-Football's /leagues payload so the paid adapter is a rename
+ * rather than a reshape. `countryName` is "World" for continental and international competitions,
+ * which is also how the host's fixture browser groups them.
+ */
+export const competitions = pgTable(
+  'competitions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    externalRef: text('external_ref'),
+    name: text('name').notNull(),
+    type: text('type').$type<CompetitionType>().notNull().default('league'),
+    countryName: text('country_name').notNull(),
+    countryCode: text('country_code'),
+    flagUrl: text('flag_url'),
+    logoUrl: text('logo_url'),
+    /** Display order within a day. Lower sorts first. */
+    priority: integer('priority').notNull().default(100),
+    createdAt: createdAt(),
+  },
+  (t) => ({
+    byExternalRef: uniqueIndex('competitions_external_ref_key').on(t.externalRef),
+  }),
+);
+
 export const teams = pgTable(
   'teams',
   {
@@ -41,6 +67,9 @@ export const teams = pgTable(
     name: text('name').notNull(),
     shortName: text('short_name').notNull(),
     crestUrl: text('crest_url'),
+    countryName: text('country_name'),
+    /** National sides share this table with clubs; only this flag tells them apart. */
+    national: boolean('national').notNull().default(false),
     createdAt: createdAt(),
   },
   (t) => ({
@@ -80,14 +109,20 @@ export const fixtures = pgTable(
       .notNull()
       .references(() => teams.id),
     status: text('status').$type<MatchStatus>().notNull().default('scheduled'),
-    competition: text('competition'),
-    kickoffAt: timestamp('kickoff_at', { withTimezone: true }),
+    competitionId: uuid('competition_id')
+      .notNull()
+      .references(() => competitions.id),
+    /** Free text from the provider, e.g. "Regular Season - 12" or "Group Stage". */
+    round: text('round'),
+    kickoffAt: timestamp('kickoff_at', { withTimezone: true }).notNull(),
     /** Null until the starting XIs are known. A room cannot start its draft before then. */
     lineupsAnnouncedAt: timestamp('lineups_announced_at', { withTimezone: true }),
     createdAt: createdAt(),
   },
   (t) => ({
     byExternalRef: uniqueIndex('fixtures_external_ref_key').on(t.externalRef),
+    byKickoff: index('fixtures_kickoff_idx').on(t.kickoffAt),
+    byCompetition: index('fixtures_competition_idx').on(t.competitionId),
   }),
 );
 

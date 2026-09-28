@@ -1,23 +1,8 @@
-import type { MatchEventType, Position, PowerUpKind } from '../types/enums.js';
+import type { MatchEventType, Position } from '../types/enums.js';
+import { cleanSheetClaimant, concededMinutes } from './cleanSheet.js';
+import { activeKindsAt, ownerAt, type OwnershipStint, type PowerUpWindow } from './ownership.js';
 import type { ScoringRules } from './rules.js';
 import { roundPoints, scoreEvent } from './score.js';
-
-export interface OwnershipStint {
-  memberId: string;
-  playerRef: string;
-  fromMinute: number;
-  /** Null while still held. */
-  toMinute: number | null;
-}
-
-export interface PowerUpWindow {
-  memberId: string;
-  /** Power-ups boost one player, and only while the manager who activated it owns them. */
-  playerRef: string;
-  kind: PowerUpKind;
-  fromMinute: number;
-  toMinute: number;
-}
 
 export interface ReplayEvent {
   minute: number;
@@ -28,6 +13,11 @@ export interface ReplayEvent {
 export interface ReplayInput {
   events: readonly ReplayEvent[];
   positions: Readonly<Record<string, Position>>;
+  /**
+   * Which team each player belongs to. Only clean sheets need it — they turn on whether the
+   * player's *team* conceded, which no single event carries.
+   */
+  teams: Readonly<Record<string, string>>;
   stints: readonly OwnershipStint[];
   powerUps: readonly PowerUpWindow[];
   rules: ScoringRules;
@@ -47,43 +37,19 @@ export interface ReplayResult {
 }
 
 /**
- * A stint covers [fromMinute, toMinute). A swap at 70' therefore closes the old stint and opens
- * the new one at the same minute, and an event stamped 70' pays the incoming manager.
+ * Minutes at which `teamRef` conceded, picking the goals out of a replay's event list. A scorer
+ * missing from `teams` counts as the opposition on purpose: an unmapped scorer is a bug either way,
+ * and withholding a clean sheet is the kinder failure than inventing one.
  */
-export function ownerAt(
-  stints: readonly OwnershipStint[],
-  playerRef: string,
-  minute: number,
-): string | null {
-  const stint = stints.find(
-    (s) =>
-      s.playerRef === playerRef &&
-      s.fromMinute <= minute &&
-      (s.toMinute === null || minute < s.toMinute),
-  );
-  return stint?.memberId ?? null;
-}
-
-/**
- * Active over [fromMinute, toMinute), so a 20'-30' boost no longer applies at 30'. Matching on
- * the manager as well as the player means a boosted player who is traded away mid-window does
- * not carry the boost to the new owner.
- */
-export function activeKindsAt(
-  powerUps: readonly PowerUpWindow[],
-  memberId: string,
-  playerRef: string,
-  minute: number,
-): PowerUpKind[] {
-  return powerUps
-    .filter(
-      (p) =>
-        p.memberId === memberId &&
-        p.playerRef === playerRef &&
-        p.fromMinute <= minute &&
-        minute < p.toMinute,
-    )
-    .map((p) => p.kind);
+export function concededMinutesFor(
+  events: readonly ReplayEvent[],
+  teams: Readonly<Record<string, string>>,
+  teamRef: string,
+): number[] {
+  const goals = events
+    .filter((e) => e.type === 'goal.scored')
+    .map((e) => ({ minute: e.minute, teamRef: teams[e.playerRef] ?? '' }));
+  return concededMinutes(goals, teamRef);
 }
 
 /**
@@ -94,17 +60,35 @@ export function activeKindsAt(
  * a database. In particular it defines the carry-over policy: points are attributed to whoever
  * owned the player at the minute of the event, so a manager keeps what they earned and never
  * inherits what someone else did.
+ *
+ * Clean sheets are the one exception, because they are a claim about a stretch of the match rather
+ * than a moment — see `cleanSheet.ts`.
  */
 export function replayLedger(input: ReplayInput): ReplayResult {
   const entries: ReplayEntry[] = [];
   const totals: Record<string, number> = {};
   const byMemberPlayer: Record<string, number> = {};
 
+  const finalMinute = input.events.reduce((latest, e) => Math.max(latest, e.minute), 0);
+
   for (const event of input.events) {
     const position = input.positions[event.playerRef];
     if (!position) continue;
 
-    const memberId = ownerAt(input.stints, event.playerRef, event.minute);
+    const memberId =
+      event.type === 'clean_sheet.awarded'
+        ? cleanSheetClaimant({
+            stints: input.stints,
+            playerRef: event.playerRef,
+            concededMinutes: concededMinutesFor(
+              input.events,
+              input.teams,
+              input.teams[event.playerRef] ?? '',
+            ),
+            finalMinute,
+            config: input.rules.cleanSheet,
+          })
+        : ownerAt(input.stints, event.playerRef, event.minute);
     if (!memberId) continue;
 
     const activeKinds = activeKindsAt(input.powerUps, memberId, event.playerRef, event.minute);

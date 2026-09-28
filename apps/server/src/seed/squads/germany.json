@@ -1,0 +1,108 @@
+{
+  "teams": [
+    {
+      "externalRef": "mock:team:bay",
+      "name": "Bayern Munich",
+      "shortName": "BAY",
+      "countryName": "Germany",
+      "national": false,
+      "crestUrl": null,
+      "players": [
+        { "externalRef": "mock:bay:neuer", "fullName": "Manuel Neuer", "position": "GK", "shirtNumber": 1, "rating": 88, "starter": true },
+        { "externalRef": "mock:bay:laimer", "fullName": "Konrad Laimer", "position": "DEF", "shirtNumber": 27, "rating": 82, "starter": true },
+        { "externalRef": "mock:bay:upamecano", "fullName": "Dayot Upamecano", "position": "DEF", "shirtNumber": 2, "rating": 85, "starter": true },
+        { "externalRef": "mock:bay:tah", "fullName": "Jonathan Tah", "position": "DEF", "shirtNumber": 4, "rating": 85, "starter": true },
+        { "externalRef": "mock:bay:davies", "fullName": "Alphonso Davies", "position": "DEF", "shirtNumber": 19, "rating": 86, "starter": true },
+        { "externalRef": "mock:bay:kimmich", "fullName": "Joshua Kimmich", "position": "MID", "shirtNumber": 6, "rating": 88, "starter": true },
+        { "externalRef": "mock:bay:goretzka", "fullName": "Leon Goretzka", "position": "MID", "shirtNumber": 8, "rating": 82, "starter": true },
+        { "externalRef": "mock:bay:musiala", "fullName": "Jamal Musiala", "position": "MID", "shirtNumber": 42, "rating": 87, "starter": true },
+        { "externalRef": "mock:bay:olise", "fullName": "Michael Olise", "position": "FWD", "shirtNumber": 17, "rating": 87, "starter": true },
+        { "externalRef": "mock:bay:kane", "fullName": "Harry Kane", "position": "FWD", "shirtNumber": 9, "rating": 90, "starter": true },
+        { "externalRef": "mock:bay:gnabry", "fullName": "Serge Gnabry", "position": "FWD", "shirtNumber": 7, "rating": 83, "starter": true },
+        { "externalRef": "mock:bay:ulreich", "fullName": "Sven Ulreich", "position": "GK", "shirtNumber": 26, "rating": 72, "starter": false },
+        { "externalRef": "mock:bay:ito", "fullName": "Hiroki Ito", "position": "DEF", "shirtNumber": 21, "rating": 79, "starter": false },
+        { "externalRef": "mock:bay:stanisic", "fullName": "Josip Stanisic", "position": "DEF", "shirtNumber": 44, "rating": 78, "starter": false },
+        { "externalRef": "mock:bay:pavlovic", "fullName": "Aleksandar Pavlovic", "position": "MID", "shirtNumber": 45, "rating": 80, "starter": false },
+        { "externalRef": "mock:bay:coman", "fullName": "Kingsley Coman", "position": "FWD", "shirtNumber": 11, "rating": 83, "starter": false }
+      ]
+    },
+    {
+      "externalRef": "mock:team:bvb",
+      "name": "Borussia Dortmund",
+      "shortName": "BVB",
+      "countryName": "Germany",
+      "national": false,
+      "crestUrl": null,
+      "players": [
+        { "externalRef": "mock:bvb:kobel", "fullName": "Gregor Kobel", "position": "GK", "shirtNumber": 1, "rating": 86, "starter": true },
+        { "externalRef": "mock:bvb:ryerson", "fullName": "Julian Ryerson", "position": "DEF", "shirtNumber": 26, "rating": 79, "starter": true },
+        { "externalRef": "mock:bvb:schlotterbeck", "fullName": "Nico Schlotterbeck", "position": "DEF", "shirtNumber": 4, "rating": 84, "starter": true },
+        { "externalRef": "mock:bvb:anton", "fullName": "Waldemar Anton", "position": "DEF", "shirtNumber": 2, "rating": 80, "starter": true },
+        { "externalRef": "mock:bvb:bensebaini", "fullName": "Ramy Bensebaini", "position": "DEF", "shirtNumber": 5, "rating": 79, "starter": true },
+        { "externalRef": "mock:bvb:gross", "fullName": "Pascal Gross", "position": "MID", "shirtNumber": 13, "rating": 81, "starter": true },
+        { "externalRef": "mock:bvb:sabitzer", "fullName": "Marcel Sabitzer", "position": "MID", "shirtNumber": 20, "rating": 82, "starter": true },
+        { "externalRef": "mock:bvb:nmecha", "fullName": "Felix Nmecha", "position": "MID", "shirtNumber": 8, "rating": 79, "starter": true },
+        { "externalRef": "mock:bvb:adeyemi", "fullName": "Karim Adeyemi", "position": "FWD", "shirtNumber": 27, "rating": 81, "starter": true },
+        { "externalRef": "mock:bvb:guirassy", "fullName": "Serhou Guirassy", "position": "FWD", "shirtNumber": 9, "rating": 85, "starter": true },
+        { "externalRef": "mock:bvb:beier", "fullName": "Maximilian Beier", "position": "FWD", "shirtNumber": 7, "rating": 79, "starter": true },
+        { "externalRef": "mock:bvb:meyer", "fullName": "Alexander Meyer", "position": "GK", "shirtNumber": 33, "rating": 70, "starter": false },
+        { "externalRef": "mock:bvb:can", "fullName": "Emre Can", "position": "DEF", "shirtNumber": 23, "rating": 78, "starter": false },
+        { "externalRef": "mock:bvb:couto", "fullName": "Yan Couto", "position": "DEF", "shirtNumber": 25, "rating": 78, "starter": false },
+        { "externalRef": "mock:bvb:brandt", "fullName": "Julian Brandt", "position": "MID", "shirtNumber": 19, "rating": 81, "starter": false },
+        { "externalRef": "mock:bvb:gittens", "fullName": "Jamie Gittens", "position": "FWD", "shirtNumber": 10, "rating": 79, "starter": false }
+      ]
+    },
+    {
+      "externalRef": "mock:team:lev",
+      "name": "Bayer Leverkusen",
+      "shortName": "LEV",
+      "countryName": "Germany",
+      "national": false,
+      "crestUrl": null,
+      "players": [
+        { "externalRef": "mock:lev:hradecky", "fullName": "Lukas Hradecky", "position": "GK", "shirtNumber": 1, "rating": 82, "starter": true },
+        { "externalRef": "mock:lev:tapsoba", "fullName": "Edmond Tapsoba", "position": "DEF", "shirtNumber": 12, "rating": 83, "starter": true },
+        { "externalRef": "mock:lev:quansah", "fullName": "Jarell Quansah", "position": "DEF", "shirtNumber": 5, "rating": 79, "starter": true },
+        { "externalRef": "mock:lev:hincapie", "fullName": "Piero Hincapie", "position": "DEF", "shirtNumber": 3, "rating": 83, "starter": true },
+        { "externalRef": "mock:lev:grimaldo", "fullName": "Alejandro Grimaldo", "position": "DEF", "shirtNumber": 20, "rating": 85, "starter": true },
+        { "externalRef": "mock:lev:palacios", "fullName": "Exequiel Palacios", "position": "MID", "shirtNumber": 25, "rating": 82, "starter": true },
+        { "externalRef": "mock:lev:andrich", "fullName": "Robert Andrich", "position": "MID", "shirtNumber": 8, "rating": 80, "starter": true },
+        { "externalRef": "mock:lev:garcia", "fullName": "Aleix Garcia", "position": "MID", "shirtNumber": 6, "rating": 79, "starter": true },
+        { "externalRef": "mock:lev:schick", "fullName": "Patrik Schick", "position": "FWD", "shirtNumber": 14, "rating": 84, "starter": true },
+        { "externalRef": "mock:lev:tella", "fullName": "Nathan Tella", "position": "FWD", "shirtNumber": 24, "rating": 79, "starter": true },
+        { "externalRef": "mock:lev:tillman", "fullName": "Malik Tillman", "position": "FWD", "shirtNumber": 10, "rating": 81, "starter": true },
+        { "externalRef": "mock:lev:flekken", "fullName": "Mark Flekken", "position": "GK", "shirtNumber": 26, "rating": 78, "starter": false },
+        { "externalRef": "mock:lev:bade", "fullName": "Loic Bade", "position": "DEF", "shirtNumber": 4, "rating": 79, "starter": false },
+        { "externalRef": "mock:lev:arthur", "fullName": "Arthur Augusto", "position": "DEF", "shirtNumber": 2, "rating": 78, "starter": false },
+        { "externalRef": "mock:lev:maza", "fullName": "Ibrahim Maza", "position": "MID", "shirtNumber": 27, "rating": 76, "starter": false },
+        { "externalRef": "mock:lev:kofane", "fullName": "Christian Kofane", "position": "FWD", "shirtNumber": 19, "rating": 72, "starter": false }
+      ]
+    },
+    {
+      "externalRef": "mock:team:rbl",
+      "name": "RB Leipzig",
+      "shortName": "RBL",
+      "countryName": "Germany",
+      "national": false,
+      "crestUrl": null,
+      "players": [
+        { "externalRef": "mock:rbl:gulacsi", "fullName": "Peter Gulacsi", "position": "GK", "shirtNumber": 1, "rating": 80, "starter": true },
+        { "externalRef": "mock:rbl:klostermann", "fullName": "Lukas Klostermann", "position": "DEF", "shirtNumber": 16, "rating": 78, "starter": true },
+        { "externalRef": "mock:rbl:orban", "fullName": "Willi Orban", "position": "DEF", "shirtNumber": 4, "rating": 82, "starter": true },
+        { "externalRef": "mock:rbl:lukeba", "fullName": "Castello Lukeba", "position": "DEF", "shirtNumber": 5, "rating": 83, "starter": true },
+        { "externalRef": "mock:rbl:raum", "fullName": "David Raum", "position": "DEF", "shirtNumber": 22, "rating": 82, "starter": true },
+        { "externalRef": "mock:rbl:schlager", "fullName": "Xaver Schlager", "position": "MID", "shirtNumber": 23, "rating": 81, "starter": true },
+        { "externalRef": "mock:rbl:seiwald", "fullName": "Nicolas Seiwald", "position": "MID", "shirtNumber": 13, "rating": 79, "starter": true },
+        { "externalRef": "mock:rbl:baumgartner", "fullName": "Christoph Baumgartner", "position": "MID", "shirtNumber": 14, "rating": 80, "starter": true },
+        { "externalRef": "mock:rbl:nusa", "fullName": "Antonio Nusa", "position": "FWD", "shirtNumber": 7, "rating": 81, "starter": true },
+        { "externalRef": "mock:rbl:romulo", "fullName": "Romulo Cardoso", "position": "FWD", "shirtNumber": 11, "rating": 78, "starter": true },
+        { "externalRef": "mock:rbl:diomande", "fullName": "Yan Diomande", "position": "FWD", "shirtNumber": 17, "rating": 77, "starter": true },
+        { "externalRef": "mock:rbl:vandevoordt", "fullName": "Maarten Vandevoordt", "position": "GK", "shirtNumber": 21, "rating": 74, "starter": false },
+        { "externalRef": "mock:rbl:baku", "fullName": "Ridle Baku", "position": "DEF", "shirtNumber": 25, "rating": 79, "starter": false },
+        { "externalRef": "mock:rbl:bitshiabu", "fullName": "El Chadaille Bitshiabu", "position": "DEF", "shirtNumber": 6, "rating": 77, "starter": false },
+        { "externalRef": "mock:rbl:ouedraogo", "fullName": "Assan Ouedraogo", "position": "MID", "shirtNumber": 27, "rating": 76, "starter": false },
+        { "externalRef": "mock:rbl:harder", "fullName": "Conrad Harder", "position": "FWD", "shirtNumber": 9, "rating": 76, "starter": false }
+      ]
+    }
+  ]
+}

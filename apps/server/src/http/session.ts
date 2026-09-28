@@ -1,12 +1,15 @@
 import type { SessionUser } from '@quickkicks/shared';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { getUser } from '../domain/room/roomService.js';
+import { env } from '../env.js';
 
 export const SESSION_COOKIE = 'qk_session';
 
 const COOKIE_OPTIONS = {
   path: '/',
   httpOnly: true,
+  // HTTPS-only in production so the session cannot ride over plain HTTP.
+  secure: env.NODE_ENV === 'production',
   sameSite: 'lax' as const,
   signed: true,
   maxAge: 60 * 60 * 24 * 30,
@@ -22,7 +25,11 @@ export function setSessionCookie(reply: FastifyReply, userId: string): void {
 }
 
 export function clearSessionCookie(reply: FastifyReply): void {
-  reply.clearCookie(SESSION_COOKIE, { path: '/' });
+  reply.clearCookie(SESSION_COOKIE, {
+    path: COOKIE_OPTIONS.path,
+    secure: COOKIE_OPTIONS.secure,
+    sameSite: COOKIE_OPTIONS.sameSite,
+  });
 }
 
 export function readSessionUserId(request: FastifyRequest): string | null {

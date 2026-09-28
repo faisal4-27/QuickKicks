@@ -1,0 +1,108 @@
+{
+  "teams": [
+    {
+      "externalRef": "mock:team:psg",
+      "name": "Paris Saint-Germain",
+      "shortName": "PSG",
+      "countryName": "France",
+      "national": false,
+      "crestUrl": null,
+      "players": [
+        { "externalRef": "mock:psg:donnarumma", "fullName": "Gianluigi Donnarumma", "position": "GK", "shirtNumber": 1, "rating": 87, "starter": true },
+        { "externalRef": "mock:psg:hakimi", "fullName": "Achraf Hakimi", "position": "DEF", "shirtNumber": 2, "rating": 87, "starter": true },
+        { "externalRef": "mock:psg:marquinhos", "fullName": "Marquinhos", "position": "DEF", "shirtNumber": 5, "rating": 83, "starter": true },
+        { "externalRef": "mock:psg:pacho", "fullName": "Willian Pacho", "position": "DEF", "shirtNumber": 51, "rating": 83, "starter": true },
+        { "externalRef": "mock:psg:mendes", "fullName": "Nuno Mendes", "position": "DEF", "shirtNumber": 25, "rating": 85, "starter": true },
+        { "externalRef": "mock:psg:vitinha", "fullName": "Vitinha", "position": "MID", "shirtNumber": 17, "rating": 88, "starter": true },
+        { "externalRef": "mock:psg:neves", "fullName": "Joao Neves", "position": "MID", "shirtNumber": 87, "rating": 85, "starter": true },
+        { "externalRef": "mock:psg:ruiz", "fullName": "Fabian Ruiz", "position": "MID", "shirtNumber": 8, "rating": 82, "starter": true },
+        { "externalRef": "mock:psg:dembele", "fullName": "Ousmane Dembele", "position": "FWD", "shirtNumber": 10, "rating": 89, "starter": true },
+        { "externalRef": "mock:psg:barcola", "fullName": "Bradley Barcola", "position": "FWD", "shirtNumber": 29, "rating": 82, "starter": true },
+        { "externalRef": "mock:psg:doue", "fullName": "Desire Doue", "position": "FWD", "shirtNumber": 14, "rating": 82, "starter": true },
+        { "externalRef": "mock:psg:safonov", "fullName": "Matvey Safonov", "position": "GK", "shirtNumber": 39, "rating": 78, "starter": false },
+        { "externalRef": "mock:psg:beraldo", "fullName": "Lucas Beraldo", "position": "DEF", "shirtNumber": 35, "rating": 76, "starter": false },
+        { "externalRef": "mock:psg:hernandez", "fullName": "Lucas Hernandez", "position": "DEF", "shirtNumber": 21, "rating": 79, "starter": false },
+        { "externalRef": "mock:psg:zaire-emery", "fullName": "Warren Zaire-Emery", "position": "MID", "shirtNumber": 33, "rating": 81, "starter": false },
+        { "externalRef": "mock:psg:ramos", "fullName": "Goncalo Ramos", "position": "FWD", "shirtNumber": 9, "rating": 80, "starter": false }
+      ]
+    },
+    {
+      "externalRef": "mock:team:mar",
+      "name": "Marseille",
+      "shortName": "MAR",
+      "countryName": "France",
+      "national": false,
+      "crestUrl": null,
+      "players": [
+        { "externalRef": "mock:mar:rulli", "fullName": "Geronimo Rulli", "position": "GK", "shirtNumber": 1, "rating": 79, "starter": true },
+        { "externalRef": "mock:mar:murillo", "fullName": "Amir Murillo", "position": "DEF", "shirtNumber": 3, "rating": 76, "starter": true },
+        { "externalRef": "mock:mar:balerdi", "fullName": "Leonardo Balerdi", "position": "DEF", "shirtNumber": 5, "rating": 79, "starter": true },
+        { "externalRef": "mock:mar:medina", "fullName": "Facundo Medina", "position": "DEF", "shirtNumber": 12, "rating": 78, "starter": true },
+        { "externalRef": "mock:mar:merlin", "fullName": "Quentin Merlin", "position": "DEF", "shirtNumber": 24, "rating": 75, "starter": true },
+        { "externalRef": "mock:mar:kondogbia", "fullName": "Geoffrey Kondogbia", "position": "MID", "shirtNumber": 20, "rating": 78, "starter": true },
+        { "externalRef": "mock:mar:rabiot", "fullName": "Adrien Rabiot", "position": "MID", "shirtNumber": 25, "rating": 83, "starter": true },
+        { "externalRef": "mock:mar:gomes", "fullName": "Angel Gomes", "position": "MID", "shirtNumber": 8, "rating": 78, "starter": true },
+        { "externalRef": "mock:mar:greenwood", "fullName": "Mason Greenwood", "position": "FWD", "shirtNumber": 10, "rating": 83, "starter": true },
+        { "externalRef": "mock:mar:gouiri", "fullName": "Amine Gouiri", "position": "FWD", "shirtNumber": 7, "rating": 80, "starter": true },
+        { "externalRef": "mock:mar:paixao", "fullName": "Igor Paixao", "position": "FWD", "shirtNumber": 11, "rating": 81, "starter": true },
+        { "externalRef": "mock:mar:blanco", "fullName": "Ruben Blanco", "position": "GK", "shirtNumber": 30, "rating": 72, "starter": false },
+        { "externalRef": "mock:mar:cornelius", "fullName": "Derek Cornelius", "position": "DEF", "shirtNumber": 4, "rating": 73, "starter": false },
+        { "externalRef": "mock:mar:emerson", "fullName": "Emerson Palmieri", "position": "DEF", "shirtNumber": 33, "rating": 76, "starter": false },
+        { "externalRef": "mock:mar:nadir", "fullName": "Bilal Nadir", "position": "MID", "shirtNumber": 27, "rating": 71, "starter": false },
+        { "externalRef": "mock:mar:aubameyang", "fullName": "Pierre-Emerick Aubameyang", "position": "FWD", "shirtNumber": 97, "rating": 78, "starter": false }
+      ]
+    },
+    {
+      "externalRef": "mock:team:mon",
+      "name": "Monaco",
+      "shortName": "MON",
+      "countryName": "France",
+      "national": false,
+      "crestUrl": null,
+      "players": [
+        { "externalRef": "mock:mon:kohn", "fullName": "Philipp Kohn", "position": "GK", "shirtNumber": 16, "rating": 74, "starter": true },
+        { "externalRef": "mock:mon:vanderson", "fullName": "Vanderson", "position": "DEF", "shirtNumber": 2, "rating": 78, "starter": true },
+        { "externalRef": "mock:mon:kehrer", "fullName": "Thilo Kehrer", "position": "DEF", "shirtNumber": 4, "rating": 78, "starter": true },
+        { "externalRef": "mock:mon:salisu", "fullName": "Mohammed Salisu", "position": "DEF", "shirtNumber": 17, "rating": 77, "starter": true },
+        { "externalRef": "mock:mon:caiohenrique", "fullName": "Caio Henrique", "position": "DEF", "shirtNumber": 12, "rating": 76, "starter": true },
+        { "externalRef": "mock:mon:zakaria", "fullName": "Denis Zakaria", "position": "MID", "shirtNumber": 20, "rating": 82, "starter": true },
+        { "externalRef": "mock:mon:camara", "fullName": "Lamine Camara", "position": "MID", "shirtNumber": 5, "rating": 77, "starter": true },
+        { "externalRef": "mock:mon:akliouche", "fullName": "Maghnes Akliouche", "position": "MID", "shirtNumber": 11, "rating": 81, "starter": true },
+        { "externalRef": "mock:mon:minamino", "fullName": "Takumi Minamino", "position": "FWD", "shirtNumber": 18, "rating": 78, "starter": true },
+        { "externalRef": "mock:mon:balogun", "fullName": "Folarin Balogun", "position": "FWD", "shirtNumber": 29, "rating": 78, "starter": true },
+        { "externalRef": "mock:mon:biereth", "fullName": "Mika Biereth", "position": "FWD", "shirtNumber": 14, "rating": 79, "starter": true },
+        { "externalRef": "mock:mon:majecki", "fullName": "Radoslaw Majecki", "position": "GK", "shirtNumber": 40, "rating": 72, "starter": false },
+        { "externalRef": "mock:mon:teze", "fullName": "Jordan Teze", "position": "DEF", "shirtNumber": 22, "rating": 75, "starter": false },
+        { "externalRef": "mock:mon:mawissa", "fullName": "Christian Mawissa", "position": "DEF", "shirtNumber": 25, "rating": 72, "starter": false },
+        { "externalRef": "mock:mon:golovin", "fullName": "Aleksandr Golovin", "position": "MID", "shirtNumber": 10, "rating": 80, "starter": false },
+        { "externalRef": "mock:mon:benseghir", "fullName": "Eliesse Ben Seghir", "position": "FWD", "shirtNumber": 7, "rating": 78, "starter": false }
+      ]
+    },
+    {
+      "externalRef": "mock:team:lil",
+      "name": "Lille",
+      "shortName": "LIL",
+      "countryName": "France",
+      "national": false,
+      "crestUrl": null,
+      "players": [
+        { "externalRef": "mock:lil:ozer", "fullName": "Berke Ozer", "position": "GK", "shirtNumber": 1, "rating": 76, "starter": true },
+        { "externalRef": "mock:lil:meunier", "fullName": "Thomas Meunier", "position": "DEF", "shirtNumber": 24, "rating": 75, "starter": true },
+        { "externalRef": "mock:lil:alexsandro", "fullName": "Alexsandro Ribeiro", "position": "DEF", "shirtNumber": 4, "rating": 79, "starter": true },
+        { "externalRef": "mock:lil:mandi", "fullName": "Aissa Mandi", "position": "DEF", "shirtNumber": 5, "rating": 76, "starter": true },
+        { "externalRef": "mock:lil:perraud", "fullName": "Romain Perraud", "position": "DEF", "shirtNumber": 3, "rating": 75, "starter": true },
+        { "externalRef": "mock:lil:andre", "fullName": "Benjamin Andre", "position": "MID", "shirtNumber": 21, "rating": 76, "starter": true },
+        { "externalRef": "mock:lil:bouaddi", "fullName": "Ayyoub Bouaddi", "position": "MID", "shirtNumber": 27, "rating": 76, "starter": true },
+        { "externalRef": "mock:lil:haraldsson", "fullName": "Hakon Haraldsson", "position": "MID", "shirtNumber": 10, "rating": 78, "starter": true },
+        { "externalRef": "mock:lil:giroud", "fullName": "Olivier Giroud", "position": "FWD", "shirtNumber": 9, "rating": 76, "starter": true },
+        { "externalRef": "mock:lil:correia", "fullName": "Felix Correia", "position": "FWD", "shirtNumber": 17, "rating": 75, "starter": true },
+        { "externalRef": "mock:lil:fernandez-pardo", "fullName": "Matias Fernandez-Pardo", "position": "FWD", "shirtNumber": 7, "rating": 77, "starter": true },
+        { "externalRef": "mock:lil:bodart", "fullName": "Arnaud Bodart", "position": "GK", "shirtNumber": 30, "rating": 72, "starter": false },
+        { "externalRef": "mock:lil:diakite", "fullName": "Bafode Diakite", "position": "DEF", "shirtNumber": 2, "rating": 80, "starter": false },
+        { "externalRef": "mock:lil:verdonk", "fullName": "Calvin Verdonk", "position": "DEF", "shirtNumber": 12, "rating": 76, "starter": false },
+        { "externalRef": "mock:lil:bentaleb", "fullName": "Nabil Bentaleb", "position": "MID", "shirtNumber": 8, "rating": 76, "starter": false },
+        { "externalRef": "mock:lil:igamane", "fullName": "Hamza Igamane", "position": "FWD", "shirtNumber": 11, "rating": 75, "starter": false }
+      ]
+    }
+  ]
+}

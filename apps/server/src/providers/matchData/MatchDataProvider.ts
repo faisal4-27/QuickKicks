@@ -27,6 +27,13 @@ export interface MatchDataProvider {
    */
   getSnapshot(matchId: string): Promise<MatchSnapshot>;
 
+  /**
+   * The event stream is a scoring stream, not a stats feed: one thing that happened on the pitch
+   * produces exactly one scoring event. In particular a shot that goes in is delivered as
+   * `goal.scored` alone, never as `shot.on_target` followed by `goal.scored`, because scoring pays
+   * every event it is handed and would otherwise pay one shot twice. Real feeds do emit both, so
+   * collapsing that pair is the adapter's job — do it here, not in the scoring rules.
+   */
   subscribe(
     matchId: string,
     handler: MatchEventHandler,

@@ -1,5 +1,5 @@
 import type { AppSocket } from '../hooks/useSocket.js';
-import { fixtureMeta } from '../lib/fixtures.js';
+import { fixtureMeta, lineupTiming } from '../lib/fixtures.js';
 import { memberById, useRoomStore } from '../state/roomStore.js';
 
 interface Props {
@@ -16,6 +16,7 @@ export function Lobby({ socket }: Props) {
 
   const { room, fixture, members } = snapshot;
   const min = room.draftConfig.minManagers;
+  const lineups = lineupTiming(fixture);
   const lineupsOut = fixture.lineupsAnnounced;
   const canStart = Boolean(me?.isHost) && members.length >= min && lineupsOut;
   const startLabel = !lineupsOut
@@ -49,12 +50,14 @@ export function Lobby({ socket }: Props) {
       <p className="lede">Share the code. Draft starts when the host is ready.</p>
 
       <p className={`lineup-status ${lineupsOut ? 'is-out' : ''}`}>
-        <span className={`lineup-badge ${lineupsOut ? 'is-out' : ''}`}>
-          {lineupsOut ? 'XIs out' : 'XIs pending'}
+        <span
+          className={`lineup-badge ${lineupsOut ? 'is-out' : 'lineup-badge--timed'}`}
+        >
+          {lineups.label}
         </span>
         {lineupsOut
           ? 'Both starting XIs are in. The draft pool is the 22 starters.'
-          : 'The draft opens once both starting XIs are announced, usually about an hour before kickoff. This page updates by itself.'}
+          : `The draft opens once both starting XIs are announced, expected around ${lineups.at}. This page updates by itself.`}
       </p>
 
       <button type="button" className="join-code-display" onClick={() => void copyCode()}>

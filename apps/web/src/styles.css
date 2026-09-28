@@ -119,6 +119,8 @@ a { color: inherit; }
   align-items: flex-end;
   margin-bottom: 1.25rem;
 }
+/* Keeps a header button at its own size once the head stacks on a narrow screen. */
+.page__head-action { align-self: flex-start; }
 
 .landing {
   min-height: 100dvh;
@@ -170,25 +172,103 @@ a { color: inherit; }
 }
 .join-code { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; }
 
-.fixture-picker { border: 0; margin: 0; padding: 0; display: grid; gap: 0.5rem; min-width: 0; }
-.fixture-picker legend { font-size: 0.9rem; color: var(--muted); margin-bottom: 0.4rem; padding: 0; }
-.fixture-option {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 0.15rem 0.6rem;
-  align-items: center;
-  padding: 0.7rem 0.9rem;
-  background: var(--bg-2);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  cursor: pointer;
+/* The host's fixture browser: a tab per day, then a section per country, then one per competition. */
+.day-tabs {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--line);
+  scrollbar-width: thin;
 }
-.fixture-option.is-selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
-.fixture-option:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
-.fixture-option input { position: absolute; opacity: 0; pointer-events: none; }
-.fixture-option__teams { font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
-.fixture-option__meta { grid-column: 1; font-size: 0.8rem; color: var(--muted); }
-.fixture-option .lineup-badge { grid-column: 2; grid-row: 1 / span 2; }
+.day-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+}
+.day-tab.is-active { border-color: var(--accent); color: var(--text); background: var(--surface-2); }
+.day-tab__label { font-weight: 600; }
+.day-tab__count {
+  font-size: 0.72rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: var(--bg-2);
+  color: var(--muted);
+}
+.day-tab.is-active .day-tab__count { background: var(--accent); color: var(--accent-ink); }
+
+.country { margin-bottom: 2rem; }
+.country__head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.country__flag { width: 1.5rem; height: 1.1rem; object-fit: cover; border-radius: 3px; }
+/* Continental and international competitions have no flag of their own. */
+.country__flag--world { background: var(--surface-2); border: 1px solid var(--line); }
+
+.competition {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+.competition__head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg-2);
+}
+.competition__head h3 { margin: 0; font-size: 0.95rem; letter-spacing: 0.03em; }
+.competition__logo { width: 1.25rem; height: 1.25rem; object-fit: contain; }
+
+.fixture-rows { list-style: none; margin: 0; padding: 0; }
+.fixture-rows li + li { border-top: 1px solid var(--line); }
+.fixture-row {
+  display: grid;
+  /* Auto, not a fixed width: a 12-hour locale needs room for "12:30 PM". */
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  text-align: left;
+}
+.fixture-row:hover:not(:disabled) { background: var(--surface-2); }
+.fixture-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.fixture-row:disabled { opacity: 0.5; cursor: progress; }
+.fixture-row__time {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+.fixture-row__teams { display: grid; gap: 0.15rem; font-weight: 600; min-width: 0; }
+.fixture-row__teams > span { overflow-wrap: anywhere; }
+.fixture-row__cta {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
 
 .lineup-badge {
   display: inline-block;
@@ -203,6 +283,8 @@ a { color: inherit; }
   border: 1px solid currentColor;
 }
 .lineup-badge.is-out { color: var(--online); }
+/* A badge carrying a clock time keeps its own case, so "XIs" does not read as "XIS". */
+.lineup-badge--timed { text-transform: none; letter-spacing: 0.02em; }
 .lineup-status { display: flex; gap: 0.6rem; align-items: baseline; color: var(--muted); font-size: 0.9rem; }
 
 .row { display: flex; gap: 0.6rem; align-items: center; }
@@ -376,5 +458,10 @@ a { color: inherit; }
 
 @media (max-width: 860px) {
   .page__head { flex-direction: column; align-items: stretch; }
+}
+/* The whole row is the host button, so the explicit "Host" label is the first thing to go. */
+@media (max-width: 620px) {
+  .fixture-row { gap: 0.6rem; }
+  .fixture-row__cta { display: none; }
 }
 }

@@ -1,19 +1,25 @@
 import { describe, expect, it } from 'vitest';
 import type { Position } from '../types/enums.js';
-import { DEFAULT_SCORING_RULES } from './rules.js';
 import {
   activeKindsAt,
   ownerAt,
-  replayLedger,
   type OwnershipStint,
   type PowerUpWindow,
-  type ReplayEvent,
-} from './replay.js';
+} from './ownership.js';
+import { replayLedger, type ReplayEvent } from './replay.js';
+import { DEFAULT_SCORING_RULES } from './rules.js';
 
 const positions: Record<string, Position> = {
   salah: 'FWD',
   palmer: 'MID',
   vandijk: 'DEF',
+};
+
+/** Salah and Van Dijk play for Liverpool, Palmer for Chelsea. */
+const teams: Record<string, string> = {
+  salah: 'LIV',
+  palmer: 'CHE',
+  vandijk: 'LIV',
 };
 
 const rules = DEFAULT_SCORING_RULES;
@@ -72,14 +78,15 @@ describe('replayLedger', () => {
     const result = replayLedger({
       events,
       positions,
+      teams,
       stints: [{ memberId: 'alice', playerRef: 'salah', fromMinute: 0, toMinute: null }],
       powerUps: [boost('alice', 'salah', 'double_goals')],
       rules,
     });
 
     expect(result.entries.map((e) => e.multiplier)).toEqual([1, 2, 1]);
-    // 180 + 360 + 180
-    expect(result.totals.alice).toBe(720);
+    // Salah is a forward: 150 + 300 + 150
+    expect(result.totals.alice).toBe(600);
   });
 
   it('boosts both players at once when each carries its own power-up', () => {
@@ -89,6 +96,7 @@ describe('replayLedger', () => {
         { minute: 25, type: 'pass.completed', playerRef: 'palmer' },
       ],
       positions,
+      teams,
       stints: [
         { memberId: 'alice', playerRef: 'salah', fromMinute: 0, toMinute: null },
         { memberId: 'alice', playerRef: 'palmer', fromMinute: 0, toMinute: null },
@@ -98,13 +106,14 @@ describe('replayLedger', () => {
     });
 
     expect(result.entries.map((e) => e.multiplier)).toEqual([2, 2]);
-    expect(result.totals.alice).toBe(360 + 2);
+    expect(result.totals.alice).toBe(300 + 2);
   });
 
   it("leaves the manager's other player unboosted", () => {
     const result = replayLedger({
       events: [{ minute: 25, type: 'goal.scored', playerRef: 'palmer' }],
       positions,
+      teams,
       stints: [
         { memberId: 'alice', playerRef: 'salah', fromMinute: 0, toMinute: null },
         { memberId: 'alice', playerRef: 'palmer', fromMinute: 0, toMinute: null },
@@ -120,6 +129,7 @@ describe('replayLedger', () => {
     const result = replayLedger({
       events: [{ minute: 25, type: 'goal.scored', playerRef: 'salah' }],
       positions,
+      teams,
       stints: [
         { memberId: 'alice', playerRef: 'salah', fromMinute: 0, toMinute: 22 },
         { memberId: 'bob', playerRef: 'salah', fromMinute: 22, toMinute: null },
@@ -128,7 +138,7 @@ describe('replayLedger', () => {
       rules,
     });
 
-    expect(result.totals).toEqual({ bob: 180 });
+    expect(result.totals).toEqual({ bob: 150 });
   });
 
   it('pays the outgoing manager for what happened before a swap and the new one after', () => {
@@ -139,6 +149,7 @@ describe('replayLedger', () => {
     const result = replayLedger({
       events,
       positions,
+      teams,
       stints: [
         { memberId: 'alice', playerRef: 'salah', fromMinute: 0, toMinute: 70 },
         { memberId: 'bob', playerRef: 'salah', fromMinute: 70, toMinute: null },
@@ -147,16 +158,17 @@ describe('replayLedger', () => {
       rules,
     });
 
-    expect(result.totals).toEqual({ alice: 180, bob: 180 });
+    expect(result.totals).toEqual({ alice: 150, bob: 150 });
     // Nothing is retroactively moved: the 30' goal stays with Alice forever.
-    expect(result.byMemberPlayer['alice:salah']).toBe(180);
-    expect(result.byMemberPlayer['bob:salah']).toBe(180);
+    expect(result.byMemberPlayer['alice:salah']).toBe(150);
+    expect(result.byMemberPlayer['bob:salah']).toBe(150);
   });
 
-  it('gives an end-of-match clean sheet to whoever holds the player at the whistle', () => {
+  it('gives a clean sheet to whoever held the player long enough, not whoever holds him at the whistle', () => {
     const result = replayLedger({
       events: [{ minute: 90, type: 'clean_sheet.awarded', playerRef: 'vandijk' }],
       positions,
+      teams,
       stints: [
         { memberId: 'alice', playerRef: 'vandijk', fromMinute: 0, toMinute: 70 },
         { memberId: 'bob', playerRef: 'vandijk', fromMinute: 70, toMinute: null },
@@ -165,14 +177,33 @@ describe('replayLedger', () => {
       rules,
     });
 
-    // The consequence of event-time attribution: Alice held him for 70 minutes and gets nothing.
-    expect(result.totals).toEqual({ bob: 100 });
+    // Alice put in the 70 minutes; Bob's 20 are not enough to claim someone else's shut-out.
+    expect(result.totals).toEqual({ alice: 100 });
+  });
+
+  it("reads a clean sheet off the opposition's goals, not the defender's own events", () => {
+    // Palmer plays for Chelsea, so his goal is a Liverpool concession — and Van Dijk's clean
+    // sheet with it, even though nothing in the stream is attributed to Van Dijk.
+    const result = replayLedger({
+      events: [
+        { minute: 40, type: 'goal.scored', playerRef: 'palmer' },
+        { minute: 90, type: 'clean_sheet.awarded', playerRef: 'vandijk' },
+      ],
+      positions,
+      teams,
+      stints: [{ memberId: 'alice', playerRef: 'vandijk', fromMinute: 0, toMinute: null }],
+      powerUps: [],
+      rules,
+    });
+
+    expect(result.totals.alice ?? 0).toBe(0);
   });
 
   it('ignores events for players nobody owns', () => {
     const result = replayLedger({
       events: [{ minute: 10, type: 'goal.scored', playerRef: 'palmer' }],
       positions,
+      teams,
       stints: [],
       powerUps: [],
       rules,
@@ -185,6 +216,7 @@ describe('replayLedger', () => {
     const result = replayLedger({
       events: [{ minute: 25, type: 'pass.missed', playerRef: 'palmer' }],
       positions,
+      teams,
       stints: [{ memberId: 'alice', playerRef: 'palmer', fromMinute: 0, toMinute: null }],
       powerUps: [boost('alice', 'palmer', 'double_passes')],
       rules,

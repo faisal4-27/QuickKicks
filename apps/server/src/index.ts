@@ -7,6 +7,7 @@ import { stopAllClocks } from './domain/clock/matchClock.js';
 import { rehydrateActiveRooms } from './domain/room/rehydrate.js';
 import { env } from './env.js';
 import { registerRoutes } from './http/routes.js';
+import { registerWeb } from './http/static.js';
 import { closeRedis } from './redis/client.js';
 import { createGateway } from './ws/gateway.js';
 
@@ -16,6 +17,7 @@ async function main(): Promise<void> {
   await app.register(cors, { origin: env.WEB_ORIGIN, credentials: true });
   await app.register(cookie, { secret: env.SESSION_SECRET });
   await registerRoutes(app);
+  await registerWeb(app);
 
   const io = await createGateway(app);
 

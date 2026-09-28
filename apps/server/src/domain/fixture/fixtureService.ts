@@ -1,12 +1,20 @@
-import type { FixtureView, Team } from '@quickkicks/shared';
-import { and, asc, eq, inArray, sql } from 'drizzle-orm';
+import { expectedLineupRelease, type Competition, type FixtureView, type Team } from '@quickkicks/shared';
+import { and, asc, eq, gte, inArray, lt, sql } from 'drizzle-orm';
 import { db } from '../../db/client.js';
-import { fixtures, rooms, teams } from '../../db/schema.js';
+import { competitions, fixtures, rooms, teams } from '../../db/schema.js';
 import { publishToRoom } from '../../redis/pubsub.js';
 import { type LineupEntry, saveFixtureLineup } from '../../seed/catalog.js';
 
 type FixtureRow = typeof fixtures.$inferSelect;
 type TeamRow = typeof teams.$inferSelect;
+type CompetitionRow = typeof competitions.$inferSelect;
+
+/**
+ * How far either side of now the host screen looks. Behind, so a fixture that has just kicked off
+ * does not vanish from today's tab mid-scroll; ahead, so the day tabs stop somewhere.
+ */
+const WINDOW_BEHIND_HOURS = 2;
+const WINDOW_AHEAD_DAYS = 8;
 
 function teamView(row: TeamRow): Team {
   return {
@@ -15,35 +23,87 @@ function teamView(row: TeamRow): Team {
     name: row.name,
     shortName: row.shortName,
     crestUrl: row.crestUrl,
+    countryName: row.countryName,
+    national: row.national,
   };
 }
 
-export function fixtureView(fixture: FixtureRow, homeTeam: TeamRow, awayTeam: TeamRow): FixtureView {
+function competitionView(row: CompetitionRow): Competition {
+  return {
+    id: row.id,
+    externalRef: row.externalRef,
+    name: row.name,
+    type: row.type,
+    countryName: row.countryName,
+    countryCode: row.countryCode,
+    flagUrl: row.flagUrl,
+    logoUrl: row.logoUrl,
+    priority: row.priority,
+  };
+}
+
+export function fixtureView(
+  fixture: FixtureRow,
+  homeTeam: TeamRow,
+  awayTeam: TeamRow,
+  competition: CompetitionRow,
+): FixtureView {
+  const kickoffAt = fixture.kickoffAt.toISOString();
   return {
     id: fixture.id,
     homeTeam: teamView(homeTeam),
     awayTeam: teamView(awayTeam),
-    competition: fixture.competition,
-    kickoffAt: fixture.kickoffAt?.toISOString() ?? null,
+    competition: competitionView(competition),
+    round: fixture.round,
+    kickoffAt,
     lineupsAnnounced: fixture.lineupsAnnouncedAt !== null,
+    // Once the XIs are actually out, show when they landed instead of when we guessed they would.
+    lineupsExpectedAt:
+      fixture.lineupsAnnouncedAt?.toISOString() ?? expectedLineupRelease(kickoffAt),
   };
 }
 
 async function viewsFor(rows: FixtureRow[]): Promise<FixtureView[]> {
   if (rows.length === 0) return [];
+
   const teamIds = [...new Set(rows.flatMap((f) => [f.homeTeamId, f.awayTeamId]))];
-  const teamRows = await db.select().from(teams).where(inArray(teams.id, teamIds));
-  const byId = new Map(teamRows.map((t) => [t.id, t]));
-  return rows.map((f) => fixtureView(f, byId.get(f.homeTeamId)!, byId.get(f.awayTeamId)!));
+  const competitionIds = [...new Set(rows.map((f) => f.competitionId))];
+  const [teamRows, competitionRows] = await Promise.all([
+    db.select().from(teams).where(inArray(teams.id, teamIds)),
+    db.select().from(competitions).where(inArray(competitions.id, competitionIds)),
+  ]);
+
+  const teamById = new Map(teamRows.map((t) => [t.id, t]));
+  const competitionById = new Map(competitionRows.map((c) => [c.id, c]));
+
+  return rows.map((f) =>
+    fixtureView(
+      f,
+      teamById.get(f.homeTeamId)!,
+      teamById.get(f.awayTeamId)!,
+      competitionById.get(f.competitionId)!,
+    ),
+  );
 }
 
-/** What a host can create a room for: anything that has not kicked off yet. */
+/**
+ * What a host can create a room for. Scoped to a window around now rather than everything on the
+ * books: a real provider carries every competition it covers, and the host screen only draws a
+ * handful of days. The client folds this flat list into day/country/competition sections with
+ * `groupFixturesByDay`, so ordering here only has to be stable.
+ */
 export async function listOpenFixtures(): Promise<FixtureView[]> {
   const rows = await db
     .select()
     .from(fixtures)
-    .where(eq(fixtures.status, 'scheduled'))
-    .orderBy(sql`${fixtures.kickoffAt} asc nulls last`, asc(fixtures.createdAt));
+    .where(
+      and(
+        eq(fixtures.status, 'scheduled'),
+        gte(fixtures.kickoffAt, sql`now() - ${`${WINDOW_BEHIND_HOURS} hours`}::interval`),
+        lt(fixtures.kickoffAt, sql`now() + ${`${WINDOW_AHEAD_DAYS} days`}::interval`),
+      ),
+    )
+    .orderBy(asc(fixtures.kickoffAt), asc(fixtures.createdAt));
   return viewsFor(rows);
 }
 

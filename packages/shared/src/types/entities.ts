@@ -1,5 +1,6 @@
 import type {
   AcquisitionSource,
+  CompetitionType,
   MatchEventType,
   MatchStatus,
   Position,
@@ -15,6 +16,23 @@ export interface Team {
   name: string;
   shortName: string;
   crestUrl: string | null;
+  countryName: string | null;
+  /** True for a national side. Clubs and nations share one table. */
+  national: boolean;
+}
+
+export interface Competition {
+  id: string;
+  externalRef: string | null;
+  name: string;
+  type: CompetitionType;
+  /** "World" for continental and international competitions. */
+  countryName: string;
+  countryCode: string | null;
+  flagUrl: string | null;
+  logoUrl: string | null;
+  /** Display order within a day. Lower sorts first. */
+  priority: number;
 }
 
 export interface Player {
