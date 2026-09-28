@@ -6,7 +6,7 @@ import { redis } from '../../redis/client.js';
 import { keys } from '../../redis/keys.js';
 import { clearRoomState, writeRoomState } from '../../redis/roomState.js';
 import { starterIds } from '../../providers/matchData/lineup.js';
-import { fixturePlayers } from '../../seed/catalog.js';
+import { fixturePlayers, lineupSource } from '../../seed/catalog.js';
 import { startMatchClock } from '../clock/matchClock.js';
 import { resumeDraftTimer } from '../draft/draftService.js';
 import { rehydratePowerUps } from '../powerups/powerUpService.js';
@@ -29,13 +29,7 @@ export async function rehydrateRoom(roomId: string): Promise<void> {
   await clearRoomState(roomId);
   await clearPresence(roomId);
 
-  const pool = starterIds({
-    matchId: roomId,
-    homeTeam: catalog.homeTeam,
-    awayTeam: catalog.awayTeam,
-    homePlayers: catalog.homePlayers,
-    awayPlayers: catalog.awayPlayers,
-  });
+  const pool = starterIds(lineupSource(catalog, roomId));
 
   const owned = await db
     .select({ playerId: rosterSlots.playerId, memberId: rosterSlots.memberId })

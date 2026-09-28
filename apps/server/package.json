@@ -10,6 +10,7 @@
     "seed": "tsx src/db/seed.ts",
     "sim": "tsx src/scripts/sim.ts",
     "e2e": "tsx src/scripts/e2e.ts",
+    "lineups:announce": "tsx src/scripts/announceLineups.ts",
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {

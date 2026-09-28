@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import type { FixtureView } from '@quickkicks/shared';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createRoom, joinRoom, rememberMember } from '../lib/api.js';
+import { createRoom, joinRoom, listFixtures, rememberMember } from '../lib/api.js';
+import { fixtureMeta } from '../lib/fixtures.js';
 import { useSession } from '../session.js';
 import { useRoomStore } from '../state/roomStore.js';
 
@@ -11,6 +13,27 @@ export function LandingPage() {
   const [name, setName] = useState(user?.displayName ?? '');
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
+  const [fixtures, setFixtures] = useState<FixtureView[] | null>(null);
+  const [fixtureId, setFixtureId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    listFixtures()
+      .then(({ fixtures: list }) => {
+        if (cancelled) return;
+        setFixtures(list);
+        // Default to a match that can be drafted right away.
+        setFixtureId((list.find((f) => f.lineupsAnnounced) ?? list[0])?.id ?? null);
+      })
+      .catch((error: Error) => {
+        if (cancelled) return;
+        setFixtures([]);
+        pushToast(error.message, 'error');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [pushToast]);
 
   const ensureName = async () => {
     const trimmed = name.trim();
@@ -20,10 +43,14 @@ export function LandingPage() {
   };
 
   const onCreate = async () => {
+    if (!fixtureId) {
+      pushToast('Pick a match to play.', 'error');
+      return;
+    }
     setBusy(true);
     try {
       await ensureName();
-      const room = await createRoom();
+      const room = await createRoom(fixtureId);
       rememberMember(room.roomId, room.memberId);
       navigate(`/room/${room.roomId}`);
     } catch (error) {
@@ -77,7 +104,42 @@ export function LandingPage() {
           />
         </label>
 
-        <button type="submit" className="btn btn--primary btn--block" disabled={busy || !ready}>
+        <fieldset className="fixture-picker">
+          <legend>Match</legend>
+          {fixtures === null ? (
+            <p className="muted">Loading matches…</p>
+          ) : fixtures.length === 0 ? (
+            <p className="muted">No upcoming matches right now.</p>
+          ) : (
+            fixtures.map((fixture) => (
+              <label
+                key={fixture.id}
+                className={`fixture-option ${fixture.id === fixtureId ? 'is-selected' : ''}`}
+              >
+                <input
+                  type="radio"
+                  name="fixture"
+                  value={fixture.id}
+                  checked={fixture.id === fixtureId}
+                  onChange={() => setFixtureId(fixture.id)}
+                />
+                <span className="fixture-option__teams">
+                  {fixture.homeTeam.name} vs {fixture.awayTeam.name}
+                </span>
+                <span className="fixture-option__meta">{fixtureMeta(fixture)}</span>
+                <span className={`lineup-badge ${fixture.lineupsAnnounced ? 'is-out' : ''}`}>
+                  {fixture.lineupsAnnounced ? 'XIs out' : 'XIs pending'}
+                </span>
+              </label>
+            ))
+          )}
+        </fieldset>
+
+        <button
+          type="submit"
+          className="btn btn--primary btn--block"
+          disabled={busy || !ready || !fixtureId}
+        >
           Host a room
         </button>
 

@@ -7,7 +7,7 @@ import { emptyRoomState, readRoomState, writeRoomState } from '../../redis/roomS
 import { MockMatchDataProvider } from '../../providers/matchData/MockMatchDataProvider.js';
 import type { DrivableMatchDataProvider, Subscription } from '../../providers/matchData/MatchDataProvider.js';
 import { buildLineup, buildRefIndex, ratingsByRef } from '../../providers/matchData/lineup.js';
-import { fixturePlayers } from '../../seed/catalog.js';
+import { fixturePlayers, lineupSource } from '../../seed/catalog.js';
 import { expireDuePowerUps, rehydratePowerUps } from '../powerups/powerUpService.js';
 import { setRoomStatus } from '../room/roomService.js';
 import { currentStandings, loadRoom, publishMembers } from '../room/snapshot.js';
@@ -49,13 +49,7 @@ export async function startMatchClock(roomId: string): Promise<void> {
 
   const room = await loadRoom(roomId);
   const catalog = await fixturePlayers(db, room.fixtureId);
-  const source = {
-    matchId: roomId,
-    homeTeam: catalog.homeTeam,
-    awayTeam: catalog.awayTeam,
-    homePlayers: catalog.homePlayers,
-    awayPlayers: catalog.awayPlayers,
-  };
+  const source = lineupSource(catalog, roomId);
 
   const lineup = buildLineup(source);
   const refIndex = buildRefIndex(source);

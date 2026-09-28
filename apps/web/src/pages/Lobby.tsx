@@ -1,4 +1,5 @@
 import type { AppSocket } from '../hooks/useSocket.js';
+import { fixtureMeta } from '../lib/fixtures.js';
 import { memberById, useRoomStore } from '../state/roomStore.js';
 
 interface Props {
@@ -15,7 +16,13 @@ export function Lobby({ socket }: Props) {
 
   const { room, fixture, members } = snapshot;
   const min = room.draftConfig.minManagers;
-  const canStart = Boolean(me?.isHost) && members.length >= min;
+  const lineupsOut = fixture.lineupsAnnounced;
+  const canStart = Boolean(me?.isHost) && members.length >= min && lineupsOut;
+  const startLabel = !lineupsOut
+    ? 'Waiting for the starting XIs'
+    : members.length < min
+      ? `Need at least ${min} managers`
+      : 'Start the snake draft';
 
   const copyCode = async () => {
     try {
@@ -36,10 +43,19 @@ export function Lobby({ socket }: Props) {
   return (
     <main className="page page--narrow">
       <p className="eyebrow">
-        {fixture.homeTeam.name} vs {fixture.awayTeam.name}
+        {fixture.homeTeam.name} vs {fixture.awayTeam.name} · {fixtureMeta(fixture)}
       </p>
       <h1>Waiting room</h1>
       <p className="lede">Share the code. Draft starts when the host is ready.</p>
+
+      <p className={`lineup-status ${lineupsOut ? 'is-out' : ''}`}>
+        <span className={`lineup-badge ${lineupsOut ? 'is-out' : ''}`}>
+          {lineupsOut ? 'XIs out' : 'XIs pending'}
+        </span>
+        {lineupsOut
+          ? 'Both starting XIs are in. The draft pool is the 22 starters.'
+          : 'The draft opens once both starting XIs are announced, usually about an hour before kickoff. This page updates by itself.'}
+      </p>
 
       <button type="button" className="join-code-display" onClick={() => void copyCode()}>
         {room.joinCode}
@@ -67,10 +83,14 @@ export function Lobby({ socket }: Props) {
 
       {me?.isHost ? (
         <button type="button" className="btn btn--primary btn--block" disabled={!canStart} onClick={start}>
-          {members.length < min ? `Need at least ${min} managers` : 'Start the snake draft'}
+          {startLabel}
         </button>
       ) : (
-        <p className="muted">Waiting for the host to start the draft.</p>
+        <p className="muted">
+          {lineupsOut
+            ? 'Waiting for the host to start the draft.'
+            : 'Waiting for the starting XIs, then for the host to start the draft.'}
+        </p>
       )}
     </main>
   );

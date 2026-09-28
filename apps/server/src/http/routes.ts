@@ -10,6 +10,7 @@ import {
   memberFor,
   renameUser,
 } from '../domain/room/roomService.js';
+import { listOpenFixtures } from '../domain/fixture/fixtureService.js';
 import { RoomNotFoundError, buildRoomSnapshot } from '../domain/room/snapshot.js';
 import { buildRecap } from '../domain/scoring/recap.js';
 import { clearSessionCookie, currentUser, requireUser, setSessionCookie } from './session.js';
@@ -17,6 +18,7 @@ import { clearSessionCookie, currentUser, requireUser, setSessionCookie } from '
 const nameSchema = z.object({ displayName: z.string().min(2).max(24) });
 const joinSchema = z.object({ joinCode: z.string().min(4).max(10) });
 const createSchema = z.object({
+  fixtureId: z.string().uuid(),
   rounds: z.coerce.number().int().min(1).max(3).optional(),
   pickTimerSeconds: z.coerce.number().int().min(5).max(180).optional(),
   maxManagers: z.coerce.number().int().min(2).max(11).optional(),
@@ -50,10 +52,13 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
     return { ok: true };
   });
 
+  // Public: the landing page shows the match picker before anyone has chosen a name.
+  app.get('/api/fixtures', async () => ({ fixtures: await listOpenFixtures() }));
+
   app.post('/api/rooms', async (request) => {
     const user = await requireUser(request);
-    const body = createSchema.parse(request.body ?? {});
-    return createRoom(user, body);
+    const { fixtureId, ...config } = createSchema.parse(request.body ?? {});
+    return createRoom(user, fixtureId, config);
   });
 
   app.post('/api/rooms/join', async (request) => {

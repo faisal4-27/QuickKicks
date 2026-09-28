@@ -13,6 +13,7 @@
 import type {
   ClientToServerEvents,
   DraftPickView,
+  FixtureView,
   MatchRecap,
   RoomSnapshot,
   ServerToClientEvents,
@@ -184,7 +185,21 @@ async function main(): Promise<void> {
   check('sessions have distinct user ids', new Set(bases.map((b) => b.userId)).size === bases.length);
 
   step('Room');
-  const createdRoom = await api(options, '/api/rooms', { method: 'POST', body: {}, cookie: bases[0]!.cookie });
+  const fixtureList = await api(options, '/api/fixtures', { cookie: bases[0]!.cookie });
+  const fixtures = (fixtureList.body?.fixtures ?? []) as FixtureView[];
+  check('fixtures are listed for the host to pick from', fixtureList.status === 200 && fixtures.length > 0,
+    JSON.stringify(fixtureList.body));
+  const fixture = fixtures.find((f) => f.lineupsAnnounced);
+  if (!fixture) throw new Error('No fixture has announced lineups. Run `npm run seed`.');
+
+  const noFixture = await api(options, '/api/rooms', { method: 'POST', body: {}, cookie: bases[0]!.cookie });
+  check('creating a room without picking a match is a 400', noFixture.status === 400, `got ${noFixture.status}`);
+
+  const createdRoom = await api(options, '/api/rooms', {
+    method: 'POST',
+    body: { fixtureId: fixture.id },
+    cookie: bases[0]!.cookie,
+  });
   check('host creates a room', createdRoom.status === 200 && !!createdRoom.body?.roomId, JSON.stringify(createdRoom.body));
   const roomId = createdRoom.body.roomId as string;
   const joinCode = createdRoom.body.joinCode as string;
@@ -204,7 +219,7 @@ async function main(): Promise<void> {
   const badJoin = await api(options, '/api/rooms/join', { method: 'POST', body: { joinCode: 'ZZZZZZ' }, cookie: bases[0]!.cookie });
   check('unknown join code is a 404', badJoin.status === 404, `got ${badJoin.status}`);
 
-  const anon = await api(options, '/api/rooms', { method: 'POST', body: {} });
+  const anon = await api(options, '/api/rooms', { method: 'POST', body: { fixtureId: fixture.id } });
   check('creating a room without a session is a 401', anon.status === 401, `got ${anon.status}`);
 
   step('Sockets');

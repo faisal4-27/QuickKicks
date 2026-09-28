@@ -23,11 +23,7 @@ export interface RoomSnapshot {
     msPerMatchMinute: number;
     scoringRules: ScoringRules;
   };
-  fixture: {
-    id: string;
-    homeTeam: Team;
-    awayTeam: Team;
-  };
+  fixture: FixtureView;
   players: Player[];
   members: MemberView[];
   draft: DraftView;
@@ -35,6 +31,18 @@ export interface RoomSnapshot {
   trades: TradeView[];
   /** Most recent events first, capped by the server. */
   feed: FeedItem[];
+}
+
+/** A fixture as the host picks it and as the lobby shows it. */
+export interface FixtureView {
+  id: string;
+  homeTeam: Team;
+  awayTeam: Team;
+  competition: string | null;
+  /** ISO timestamp, or null for a simulated fixture with no real kickoff. */
+  kickoffAt: string | null;
+  /** The draft cannot start until this is true: the pool is the announced starting XIs. */
+  lineupsAnnounced: boolean;
 }
 
 export interface MemberView {

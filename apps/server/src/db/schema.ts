@@ -18,6 +18,7 @@ import {
   integer,
   jsonb,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uniqueIndex,
@@ -79,10 +80,31 @@ export const fixtures = pgTable(
       .notNull()
       .references(() => teams.id),
     status: text('status').$type<MatchStatus>().notNull().default('scheduled'),
+    competition: text('competition'),
+    kickoffAt: timestamp('kickoff_at', { withTimezone: true }),
+    /** Null until the starting XIs are known. A room cannot start its draft before then. */
+    lineupsAnnouncedAt: timestamp('lineups_announced_at', { withTimezone: true }),
     createdAt: createdAt(),
   },
   (t) => ({
     byExternalRef: uniqueIndex('fixtures_external_ref_key').on(t.externalRef),
+  }),
+);
+
+/** Who is in the matchday squad for a fixture, and who starts. The starters are the draft pool. */
+export const fixtureLineups = pgTable(
+  'fixture_lineups',
+  {
+    fixtureId: uuid('fixture_id')
+      .notNull()
+      .references(() => fixtures.id, { onDelete: 'cascade' }),
+    playerId: uuid('player_id')
+      .notNull()
+      .references(() => players.id, { onDelete: 'cascade' }),
+    isStarter: boolean('is_starter').notNull(),
+  },
+  (t) => ({
+    pk: primaryKey({ columns: [t.fixtureId, t.playerId] }),
   }),
 );
 
@@ -325,6 +347,7 @@ export const schemaTables = {
   teams,
   players,
   fixtures,
+  fixtureLineups,
   rooms,
   roomMembers,
   draftPicks,

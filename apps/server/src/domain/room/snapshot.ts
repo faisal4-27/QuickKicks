@@ -30,6 +30,7 @@ import { publishToRoom } from '../../redis/pubsub.js';
 import { redis } from '../../redis/client.js';
 import { emptyRoomState, readRoomState } from '../../redis/roomState.js';
 import { fixturePlayers } from '../../seed/catalog.js';
+import { fixtureView } from '../fixture/fixtureService.js';
 import { computeStandings } from '../scoring/standings.js';
 
 export const FEED_EXCLUDED_TYPES: readonly MatchEventType[] = [
@@ -285,23 +286,7 @@ export async function buildRoomSnapshot(roomId: string): Promise<RoomSnapshot> {
       msPerMatchMinute: room.msPerMatchMinute,
       scoringRules: rules,
     },
-    fixture: {
-      id: catalog.fixture.id,
-      homeTeam: {
-        id: catalog.homeTeam.id,
-        externalRef: catalog.homeTeam.externalRef,
-        name: catalog.homeTeam.name,
-        shortName: catalog.homeTeam.shortName,
-        crestUrl: catalog.homeTeam.crestUrl,
-      },
-      awayTeam: {
-        id: catalog.awayTeam.id,
-        externalRef: catalog.awayTeam.externalRef,
-        name: catalog.awayTeam.name,
-        shortName: catalog.awayTeam.shortName,
-        crestUrl: catalog.awayTeam.crestUrl,
-      },
-    },
+    fixture: fixtureView(catalog.fixture, catalog.homeTeam, catalog.awayTeam),
     players: allPlayers,
     members: memberViews,
     draft: {

@@ -1,7 +1,8 @@
 import type { Position } from '@quickkicks/shared';
-import { eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import type { Executor } from '../db/client.js';
-import { fixtures, players, teams } from '../db/schema.js';
+import { fixtureLineups, fixtures, players, teams } from '../db/schema.js';
+import type { LineupSource } from '../providers/matchData/lineup.js';
 import seedData from './players.json' with { type: 'json' };
 
 export interface SeedPlayer {
@@ -21,17 +22,25 @@ export interface SeedTeam {
   players: SeedPlayer[];
 }
 
+export interface SeedFixture {
+  externalRef: string;
+  homeTeamRef: string;
+  awayTeamRef: string;
+  competition: string;
+  /**
+   * Whether the seed announces this fixture's XIs up front. One seeded fixture is deliberately
+   * left unannounced so the lobby's "waiting for lineups" state can be exercised locally with
+   * `npm run lineups:announce`.
+   */
+  lineupsAnnounced: boolean;
+}
+
 export interface SeedCatalog {
-  fixture: { externalRef: string; homeTeamRef: string; awayTeamRef: string };
+  fixtures: SeedFixture[];
   teams: SeedTeam[];
 }
 
 export const catalog = seedData as SeedCatalog;
-
-/** Lookup of which seeded refs start the match, which is what defines the draft pool. */
-export const STARTER_REFS: ReadonlySet<string> = new Set(
-  catalog.teams.flatMap((t) => t.players.filter((p) => p.starter).map((p) => p.externalRef)),
-);
 
 export function seedPlayerByRef(ref: string): SeedPlayer | undefined {
   for (const team of catalog.teams) {
@@ -51,7 +60,7 @@ export function seedTeamForPlayerRef(ref: string): SeedTeam | undefined {
  */
 export async function seedCatalog(
   exec: Executor,
-): Promise<{ teams: number; players: number; fixtureId: string }> {
+): Promise<{ teams: number; players: number; fixtures: number }> {
   const teamIdByRef = new Map<string, string>();
   let playerCount = 0;
 
@@ -99,61 +108,89 @@ export async function seedCatalog(
     }
   }
 
-  const homeTeamId = teamIdByRef.get(catalog.fixture.homeTeamRef);
-  const awayTeamId = teamIdByRef.get(catalog.fixture.awayTeamRef);
-  if (!homeTeamId || !awayTeamId) throw new Error('Fixture references an unseeded team');
+  for (const seedFixture of catalog.fixtures) {
+    const homeTeamId = teamIdByRef.get(seedFixture.homeTeamRef);
+    const awayTeamId = teamIdByRef.get(seedFixture.awayTeamRef);
+    if (!homeTeamId || !awayTeamId) {
+      throw new Error(`Fixture ${seedFixture.externalRef} references an unseeded team`);
+    }
 
-  const existingFixture = (
-    await exec
-      .select({ id: fixtures.id })
-      .from(fixtures)
-      .where(eq(fixtures.externalRef, catalog.fixture.externalRef))
-      .limit(1)
-  )[0];
+    const [row] = await exec
+      .insert(fixtures)
+      .values({
+        externalRef: seedFixture.externalRef,
+        homeTeamId,
+        awayTeamId,
+        competition: seedFixture.competition,
+        status: 'scheduled',
+      })
+      .onConflictDoUpdate({
+        target: fixtures.externalRef,
+        set: { homeTeamId, awayTeamId, competition: seedFixture.competition },
+      })
+      .returning({ id: fixtures.id, lineupsAnnouncedAt: fixtures.lineupsAnnouncedAt });
+    if (!row) throw new Error(`Failed to resolve fixture ${seedFixture.externalRef}`);
 
-  const fixtureId =
-    existingFixture?.id ??
-    (
-      await exec
-        .insert(fixtures)
-        .values({
-          externalRef: catalog.fixture.externalRef,
-          homeTeamId,
-          awayTeamId,
-          status: 'scheduled',
-        })
-        .returning({ id: fixtures.id })
-    )[0]?.id;
+    // Never un-announce on a re-seed: a lobby may already be waiting on (or drafting from) it.
+    if (seedFixture.lineupsAnnounced && !row.lineupsAnnouncedAt) {
+      const entries = await seedLineupFor(exec, [homeTeamId, awayTeamId]);
+      await exec.transaction((tx) => saveFixtureLineup(tx, row.id, entries));
+    }
+  }
 
-  if (!fixtureId) throw new Error('Failed to create the default fixture');
-
-  return { teams: catalog.teams.length, players: playerCount, fixtureId };
+  return { teams: catalog.teams.length, players: playerCount, fixtures: catalog.fixtures.length };
 }
 
-/** The fixture rooms are created against until real fixtures exist. */
-export async function defaultFixtureId(exec: Executor): Promise<string> {
-  const row = (
-    await exec
-      .select({ id: fixtures.id })
-      .from(fixtures)
-      .where(eq(fixtures.externalRef, catalog.fixture.externalRef))
-      .limit(1)
-  )[0];
-  if (row) return row.id;
-  const { fixtureId } = await seedCatalog(exec);
-  return fixtureId;
+export interface LineupEntry {
+  playerId: string;
+  isStarter: boolean;
 }
 
-/** Both squads for a fixture, used to build the draft pool. */
+/** The seed file's `starter` flags, as a lineup for whichever two teams are playing. */
+export async function seedLineupFor(exec: Executor, teamIds: string[]): Promise<LineupEntry[]> {
+  const rows = await exec
+    .select({ id: players.id, externalRef: players.externalRef })
+    .from(players)
+    .where(inArray(players.teamId, teamIds));
+  return rows.map((row) => ({
+    playerId: row.id,
+    isStarter: row.externalRef ? (seedPlayerByRef(row.externalRef)?.starter ?? false) : false,
+  }));
+}
+
+/**
+ * Replaces a fixture's lineup and marks it announced. Call inside a transaction so the gate and
+ * the rows it guards land together.
+ */
+export async function saveFixtureLineup(
+  exec: Executor,
+  fixtureId: string,
+  entries: LineupEntry[],
+): Promise<void> {
+  await exec.delete(fixtureLineups).where(eq(fixtureLineups.fixtureId, fixtureId));
+  if (entries.length > 0) {
+    await exec.insert(fixtureLineups).values(entries.map((e) => ({ fixtureId, ...e })));
+  }
+  await exec
+    .update(fixtures)
+    .set({ lineupsAnnouncedAt: new Date() })
+    .where(eq(fixtures.id, fixtureId));
+}
+
+/** Both squads for a fixture, plus its announced starters, used to build the draft pool. */
 export async function fixturePlayers(exec: Executor, fixtureId: string) {
   const fixture = (
     await exec.select().from(fixtures).where(eq(fixtures.id, fixtureId)).limit(1)
   )[0];
   if (!fixture) throw new Error(`Unknown fixture ${fixtureId}`);
 
-  const [home, away] = await Promise.all([
+  const [home, away, lineup] = await Promise.all([
     exec.select().from(players).where(eq(players.teamId, fixture.homeTeamId)),
     exec.select().from(players).where(eq(players.teamId, fixture.awayTeamId)),
+    exec
+      .select({ playerId: fixtureLineups.playerId })
+      .from(fixtureLineups)
+      .where(and(eq(fixtureLineups.fixtureId, fixtureId), eq(fixtureLineups.isStarter, true))),
   ]);
 
   const [homeTeam, awayTeam] = await Promise.all([
@@ -167,5 +204,19 @@ export async function fixturePlayers(exec: Executor, fixtureId: string) {
     awayTeam: awayTeam[0]!,
     homePlayers: home,
     awayPlayers: away,
+    starterIds: new Set(lineup.map((row) => row.playerId)) as ReadonlySet<string>,
+  };
+}
+
+export type FixtureCatalog = Awaited<ReturnType<typeof fixturePlayers>>;
+
+export function lineupSource(fixtureCatalog: FixtureCatalog, matchId: string): LineupSource {
+  return {
+    matchId,
+    homeTeam: fixtureCatalog.homeTeam,
+    awayTeam: fixtureCatalog.awayTeam,
+    homePlayers: fixtureCatalog.homePlayers,
+    awayPlayers: fixtureCatalog.awayPlayers,
+    starterIds: fixtureCatalog.starterIds,
   };
 }

@@ -1,13 +1,13 @@
 import { DEFAULT_SCORING_RULES, type DraftConfig, type SessionUser } from '@quickkicks/shared';
 import { and, eq, sql } from 'drizzle-orm';
 import { db } from '../../db/client.js';
-import { roomMembers, rooms, users } from '../../db/schema.js';
+import { fixtures, roomMembers, rooms, users } from '../../db/schema.js';
 import { env } from '../../env.js';
 import { generateJoinCode, normalizeJoinCode } from '../../lib/joinCode.js';
 import { keys } from '../../redis/keys.js';
 import { redis } from '../../redis/client.js';
 import { writeRoomState } from '../../redis/roomState.js';
-import { defaultFixtureId, fixturePlayers } from '../../seed/catalog.js';
+import { fixturePlayers, lineupSource } from '../../seed/catalog.js';
 import { starterIds } from '../../providers/matchData/lineup.js';
 import { RoomNotFoundError, loadRoom } from './snapshot.js';
 
@@ -62,9 +62,17 @@ export interface CreateRoomResult {
 
 export async function createRoom(
   user: SessionUser,
+  fixtureId: string,
   overrides: Partial<DraftConfig> = {},
 ): Promise<CreateRoomResult> {
-  const fixtureId = await defaultFixtureId(db);
+  const fixture = (
+    await db.select({ status: fixtures.status }).from(fixtures).where(eq(fixtures.id, fixtureId)).limit(1)
+  )[0];
+  if (!fixture) throw new DomainError('That match does not exist. Pick another one.');
+  if (fixture.status !== 'scheduled') {
+    throw new DomainError('That match has already kicked off. Pick another one.');
+  }
+
   const draftConfig: DraftConfig = { ...DEFAULT_DRAFT_CONFIG, ...overrides };
 
   if (draftConfig.rounds < 1 || draftConfig.rounds > 3) {
@@ -116,17 +124,14 @@ export async function createRoom(
   return result;
 }
 
-/** Fills the available-player set so the draft board has a pool the moment the room exists. */
+/**
+ * Fills the available-player set from the fixture's announced starters. A no-op until the
+ * lineups are announced, which is why `startDraft` runs it again right before the first pick.
+ */
 export async function primeAvailablePool(roomId: string): Promise<void> {
   const room = await loadRoom(roomId);
   const catalog = await fixturePlayers(db, room.fixtureId);
-  const ids = starterIds({
-    matchId: roomId,
-    homeTeam: catalog.homeTeam,
-    awayTeam: catalog.awayTeam,
-    homePlayers: catalog.homePlayers,
-    awayPlayers: catalog.awayPlayers,
-  });
+  const ids = starterIds(lineupSource(catalog, roomId));
   if (ids.length === 0) return;
   await redis.del(keys.available(roomId));
   await redis.sadd(keys.available(roomId), ...ids);

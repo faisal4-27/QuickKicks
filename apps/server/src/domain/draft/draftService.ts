@@ -5,7 +5,7 @@ import {
 } from '@quickkicks/shared';
 import { eq } from 'drizzle-orm';
 import { db } from '../../db/client.js';
-import { draftPicks, players as playersTable, roomMembers } from '../../db/schema.js';
+import { draftPicks, fixtures, players as playersTable, roomMembers } from '../../db/schema.js';
 import { redis } from '../../redis/client.js';
 import { keys } from '../../redis/keys.js';
 import { withLock } from '../../redis/locks.js';
@@ -75,6 +75,23 @@ export async function startDraft(roomId: string, userId: string): Promise<void> 
     );
   }
 
+  // The pool is the announced starting XIs, so without them there is nothing honest to draft.
+  const fixture = (
+    await db
+      .select({ lineupsAnnouncedAt: fixtures.lineupsAnnouncedAt })
+      .from(fixtures)
+      .where(eq(fixtures.id, room.fixtureId))
+      .limit(1)
+  )[0];
+  if (!fixture?.lineupsAnnouncedAt) {
+    throw new DomainError(
+      'The starting XIs for this match are not out yet. They usually land about an hour before kickoff.',
+    );
+  }
+
+  // Rebuilt from the lineup now rather than trusted from room creation: the XIs may have been
+  // announced (or revised) while the lobby was waiting.
+  await primeAvailablePool(roomId);
   const poolSize = await redis.scard(keys.available(roomId));
   const needed = calcTotalPicks(members.length, room.draftConfig.rounds);
   if (poolSize < needed) {

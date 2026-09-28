@@ -61,6 +61,14 @@ export function useSocket(roomId: string, myUserMemberId: string | null): AppSoc
       store.getState().setPresence(connectedMemberIds),
     );
     socket.on('members:update', ({ members }) => store.getState().setMembers(members));
+    socket.on('fixture:lineups', () => {
+      store.getState().pushToast('Starting XIs are out. The draft can start.');
+      // The fixture flag and the draft pool both change, so take a clean snapshot.
+      void fetchRoom(roomId).then((payload) => {
+        const { myMemberId, ...snapshot } = payload;
+        store.getState().setSnapshot(snapshot, myMemberId ?? myUserMemberId);
+      });
+    });
     socket.on('score:update', ({ standings }) => store.getState().setStandings(standings));
 
     socket.on('draft:turn', (turn) => store.getState().setTurn(turn));

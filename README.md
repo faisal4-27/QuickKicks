@@ -28,8 +28,8 @@ npm run dev
 
 ## How a game runs
 
-1. Host picks a name and creates a room. Friends join with the six-character code.
-2. Host starts a two-round snake draft of the two starting XIs.
+1. Host picks a name and a match, and creates a room. Friends join with the six-character code.
+2. Once that match's starting XIs are announced, the host starts a two-round snake draft of them. Until then the lobby waits and unlocks by itself (`npm run lineups:announce -- mock:fixture:liv-che` announces the seeded pending match locally).
 3. The last pick kicks off the simulated match. Points update live.
 4. During the match: three power-ups (each used once, on one of your players, and never two on the same player at once), one swap before 60', 1-for-1 trades until 75'.
 5. Full time produces a recap.

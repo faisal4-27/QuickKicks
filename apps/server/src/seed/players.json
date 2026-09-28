@@ -1,9 +1,20 @@
 {
-  "fixture": {
-    "externalRef": "mock:fixture:che-liv",
-    "homeTeamRef": "mock:team:che",
-    "awayTeamRef": "mock:team:liv"
-  },
+  "fixtures": [
+    {
+      "externalRef": "mock:fixture:che-liv",
+      "homeTeamRef": "mock:team:che",
+      "awayTeamRef": "mock:team:liv",
+      "competition": "Premier League",
+      "lineupsAnnounced": true
+    },
+    {
+      "externalRef": "mock:fixture:liv-che",
+      "homeTeamRef": "mock:team:liv",
+      "awayTeamRef": "mock:team:che",
+      "competition": "Premier League",
+      "lineupsAnnounced": false
+    }
+  ],
   "teams": [
     {
       "externalRef": "mock:team:che",

@@ -2,6 +2,7 @@ import type { PowerUpKind } from '../types/enums.js';
 import type {
   DraftPickView,
   FeedItem,
+  FixtureView,
   MatchRecap,
   MatchView,
   MemberView,
@@ -20,6 +21,8 @@ export interface ServerToClientEvents {
   'room:status': (payload: { status: RoomSnapshot['room']['status'] }) => void;
   'presence:update': (payload: { connectedMemberIds: string[] }) => void;
   'members:update': (payload: { members: MemberView[] }) => void;
+  /** The room's fixture just had its starting XIs announced, so the draft can now start. */
+  'fixture:lineups': (payload: { fixture: FixtureView }) => void;
 
   'draft:turn': (payload: {
     memberId: string;

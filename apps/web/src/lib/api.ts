@@ -1,4 +1,4 @@
-import type { MatchRecap, RoomSnapshot, SessionUser } from '@quickkicks/shared';
+import type { FixtureView, MatchRecap, RoomSnapshot, SessionUser } from '@quickkicks/shared';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, {
@@ -26,6 +26,10 @@ export function clearSession(): Promise<{ ok: true }> {
   return request('/api/session', { method: 'DELETE' });
 }
 
+export function listFixtures(): Promise<{ fixtures: FixtureView[] }> {
+  return request('/api/fixtures');
+}
+
 export interface CreateRoomOptions {
   rounds?: number;
   pickTimerSeconds?: number;
@@ -33,9 +37,10 @@ export interface CreateRoomOptions {
 }
 
 export function createRoom(
+  fixtureId: string,
   options: CreateRoomOptions = {},
 ): Promise<{ roomId: string; joinCode: string; memberId: string }> {
-  return request('/api/rooms', { method: 'POST', body: JSON.stringify(options) });
+  return request('/api/rooms', { method: 'POST', body: JSON.stringify({ fixtureId, ...options }) });
 }
 
 export function joinRoom(

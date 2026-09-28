@@ -1,5 +1,4 @@
 import type { Lineup, LineupTeam, Player, Team } from '@quickkicks/shared';
-import { STARTER_REFS } from '../../seed/catalog.js';
 
 export interface LineupSource {
   matchId: string;
@@ -7,6 +6,8 @@ export interface LineupSource {
   awayTeam: Team;
   homePlayers: Player[];
   awayPlayers: Player[];
+  /** Our player ids for the announced starting XIs. Empty until the lineups are announced. */
+  starterIds: ReadonlySet<string>;
 }
 
 function teamRefOf(team: Team): string {
@@ -17,17 +18,7 @@ function playerRefOf(player: Player): string {
   return player.externalRef ?? player.id;
 }
 
-/**
- * Starters are the draft pool. A drafted substitute who never comes on would score nothing all
- * match, which is a miserable way to lose, so v1 only offers the 22 players who start.
- */
-function isStarter(player: Player): boolean {
-  const ref = player.externalRef;
-  // Anything not in the seeded starter list (a future real lineup feed) is treated as starting.
-  return ref === null ? true : STARTER_REFS.has(ref) || STARTER_REFS.size === 0;
-}
-
-function buildTeam(team: Team, players: Player[]): LineupTeam {
+function buildTeam(team: Team, players: Player[], starters: ReadonlySet<string>): LineupTeam {
   return {
     teamRef: teamRefOf(team),
     name: team.name,
@@ -37,7 +28,7 @@ function buildTeam(team: Team, players: Player[]): LineupTeam {
       fullName: player.fullName,
       position: player.position,
       shirtNumber: player.shirtNumber,
-      isStarter: isStarter(player),
+      isStarter: starters.has(player.id),
     })),
   };
 }
@@ -45,8 +36,8 @@ function buildTeam(team: Team, players: Player[]): LineupTeam {
 export function buildLineup(source: LineupSource): Lineup {
   return {
     matchId: source.matchId,
-    home: buildTeam(source.homeTeam, source.homePlayers),
-    away: buildTeam(source.awayTeam, source.awayPlayers),
+    home: buildTeam(source.homeTeam, source.homePlayers, source.starterIds),
+    away: buildTeam(source.awayTeam, source.awayPlayers, source.starterIds),
   };
 }
 
@@ -59,8 +50,14 @@ export function buildRefIndex(source: LineupSource): Map<string, Player> {
   return index;
 }
 
+/**
+ * Starters are the draft pool. A drafted substitute who never comes on would score nothing all
+ * match, which is a miserable way to lose, so only the 22 players who start are offered.
+ */
 export function starterIds(source: LineupSource): string[] {
-  return [...source.homePlayers, ...source.awayPlayers].filter(isStarter).map((p) => p.id);
+  return [...source.homePlayers, ...source.awayPlayers]
+    .filter((p) => source.starterIds.has(p.id))
+    .map((p) => p.id);
 }
 
 export function ratingsByRef(source: LineupSource): Record<string, number> {
