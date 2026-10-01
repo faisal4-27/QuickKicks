@@ -22,6 +22,14 @@ const schema = z.object({
   SESSION_SECRET: z.string().min(16).default('quickkicks-local-development-secret'),
   WEB_ORIGIN: z.string().default('http://localhost:5173'),
   MATCH_MS_PER_MINUTE: z.coerce.number().int().min(50).default(2000),
+  /**
+   * Set true when the web app is on a different origin (e.g. Vercel) than this API (e.g. Render).
+   * Forces SameSite=None; Secure so the session cookie is sent cross-site.
+   */
+  CROSS_ORIGIN: z
+    .enum(['true', 'false', '1', '0'])
+    .default('false')
+    .transform((v) => v === 'true' || v === '1'),
 });
 
 const parsed = schema.safeParse(process.env);

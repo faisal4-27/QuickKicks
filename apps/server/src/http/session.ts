@@ -5,12 +5,14 @@ import { env } from '../env.js';
 
 export const SESSION_COOKIE = 'qk_session';
 
+const crossOrigin = env.CROSS_ORIGIN;
+
 const COOKIE_OPTIONS = {
   path: '/',
   httpOnly: true,
-  // HTTPS-only in production so the session cannot ride over plain HTTP.
-  secure: env.NODE_ENV === 'production',
-  sameSite: 'lax' as const,
+  // Cross-origin (Vercel → Render) needs Secure + SameSite=None; otherwise Secure only in prod.
+  secure: crossOrigin || env.NODE_ENV === 'production',
+  sameSite: (crossOrigin ? 'none' : 'lax') as 'none' | 'lax',
   signed: true,
   maxAge: 60 * 60 * 24 * 30,
 };

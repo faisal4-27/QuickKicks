@@ -1,7 +1,8 @@
 import type { FixtureView, MatchRecap, RoomSnapshot, SessionUser } from '@quickkicks/shared';
+import { apiUrl } from './apiBase.js';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, {
+  const response = await fetch(apiUrl(path), {
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     ...init,

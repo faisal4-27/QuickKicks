@@ -2,6 +2,7 @@ import type { ClientToServerEvents, ServerToClientEvents } from '@quickkicks/sha
 import { useEffect, useState } from 'react';
 import { io, type Socket } from 'socket.io-client';
 import { fetchRoom } from '../lib/api.js';
+import { apiBaseUrl } from '../lib/apiBase.js';
 import { useRoomStore } from '../state/roomStore.js';
 
 export type AppSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
@@ -17,7 +18,12 @@ export function useSocket(roomId: string, myUserMemberId: string | null): AppSoc
   useEffect(() => {
     if (!roomId || !myUserMemberId) return;
 
-    const socket: AppSocket = io({ withCredentials: true, transports: ['websocket', 'polling'] });
+    // Empty base → same origin (Vite proxy / server-hosted web). Set VITE_API_URL on Vercel.
+    const backend = apiBaseUrl();
+    const socket: AppSocket = io(backend || undefined, {
+      withCredentials: true,
+      transports: ['websocket', 'polling'],
+    });
     setSocket(socket);
 
     const subscribe = () => {
