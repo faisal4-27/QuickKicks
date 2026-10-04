@@ -371,7 +371,6 @@ a { color: inherit; }
 .pick-timer.is-urgent { border-color: var(--danger); color: var(--danger); }
 
 .filters { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 1rem 0; align-items: center; }
-.filters__gap { flex: 0 0 0.6rem; }
 .chip {
   border: 1px solid var(--line);
   background: transparent;
@@ -380,11 +379,22 @@ a { color: inherit; }
 }
 .chip.is-on { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
 
-.player-grid {
+.lineups {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 0.6rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  align-items: start;
 }
+.lineup { display: grid; gap: 0.5rem; }
+.lineup__head {
+  margin: 0 0 0.25rem;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+.lineup:last-child .lineup__head { text-align: right; }
 .player-card {
   display: flex;
   gap: 0.7rem;
@@ -463,5 +473,8 @@ a { color: inherit; }
 @media (max-width: 620px) {
   .fixture-row { gap: 0.6rem; }
   .fixture-row__cta { display: none; }
+  .lineups { gap: 0.5rem; }
+  .lineup .player-card { gap: 0.45rem; padding: 0.5rem; font-size: 0.85rem; }
+  .lineup .player-card__name { overflow-wrap: anywhere; }
 }
 }

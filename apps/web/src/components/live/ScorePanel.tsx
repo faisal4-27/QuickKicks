@@ -50,7 +50,7 @@ export function ScorePanel() {
   };
 
   return (
-    <section className="flex min-h-0 flex-col items-center overflow-y-auto px-4 py-6 lg:px-8">
+    <section className="flex min-h-0 flex-col items-center px-4 py-6 lg:overflow-y-auto lg:px-8">
       <SectionLabel className="text-sky!">Total score</SectionLabel>
       <p className="mt-1 font-display text-7xl leading-none font-extrabold text-white sm:text-8xl">
         {formatPoints(me.points)}

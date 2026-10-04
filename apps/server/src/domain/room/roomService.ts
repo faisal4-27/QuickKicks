@@ -9,7 +9,7 @@ import { redis } from '../../redis/client.js';
 import { writeRoomState } from '../../redis/roomState.js';
 import { fixturePlayers, lineupSource } from '../../seed/catalog.js';
 import { starterIds } from '../../providers/matchData/lineup.js';
-import { RoomNotFoundError, loadRoom } from './snapshot.js';
+import { RoomNotFoundError, loadRoom, publishMembers } from './snapshot.js';
 
 export const DEFAULT_DRAFT_CONFIG: DraftConfig = {
   rounds: 2,
@@ -195,6 +195,8 @@ export async function joinRoom(user: SessionUser, joinCode: string): Promise<Joi
     if (!member) throw new Error('Failed to seat the manager');
     return member.id;
   });
+
+  await publishMembers(room.id);
 
   return { roomId: room.id, memberId, joinCode: room.joinCode };
 }

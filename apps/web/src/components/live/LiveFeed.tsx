@@ -21,7 +21,7 @@ export function LiveFeed() {
     : snapshot.feed.filter((item) => item.awards.some((a) => a.memberId === myMemberId));
 
   return (
-    <section className="mt-8 w-full max-w-2xl overflow-hidden rounded-2xl border border-navy-600 bg-navy-850">
+    <section className="mt-8 w-full max-w-2xl rounded-2xl border border-navy-600 bg-navy-850">
       <header className="flex items-center justify-between gap-3 border-b border-navy-700 px-4 py-3">
         <h3 className="flex items-center gap-2 text-xs font-semibold whitespace-nowrap uppercase tracking-[0.12em] text-sky sm:text-sm sm:tracking-[0.14em]">
           <span className="size-2 animate-pulse rounded-full bg-gain" aria-hidden />
@@ -46,7 +46,7 @@ export function LiveFeed() {
             : 'Nothing from your players yet. Passes still count toward your total.'}
         </p>
       ) : (
-        <ol className="max-h-[26rem] divide-y divide-navy-700 overflow-y-auto">
+        <ol className="max-h-[60dvh] touch-pan-y divide-y divide-navy-700 overflow-y-auto overscroll-y-contain rounded-b-2xl lg:max-h-[26rem]">
           {items.map((item) => {
             const player = item.playerId ? players.get(item.playerId) : undefined;
             const kit = kitFor(player ? teamFor(snapshot, player.teamId) : undefined);

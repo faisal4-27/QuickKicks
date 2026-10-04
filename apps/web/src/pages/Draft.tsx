@@ -17,17 +17,21 @@ export function Draft({ socket }: Props) {
   const me = memberById(snapshot, myMemberId);
   const players = playerIndex(snapshot);
   const [position, setPosition] = useState<Position | 'ALL'>('ALL');
-  const [teamId, setTeamId] = useState<string>('ALL');
 
-  const available = useMemo(() => {
+  // The pool is the starters, so available plus drafted is each side's full XI.
+  const pool = useMemo(() => {
     if (!snapshot) return [];
-    return snapshot.draft.availablePlayerIds
+    const ids = [...snapshot.draft.availablePlayerIds, ...snapshot.draft.picks.map((p) => p.playerId)];
+    return ids
       .map((id) => players.get(id))
       .filter((p): p is NonNullable<typeof p> => Boolean(p))
       .filter((p) => position === 'ALL' || p.position === position)
-      .filter((p) => teamId === 'ALL' || p.teamId === teamId)
-      .sort((a, b) => b.rating - a.rating);
-  }, [snapshot, players, position, teamId]);
+      .sort(
+        (a, b) =>
+          (a.shirtNumber ?? Number.MAX_SAFE_INTEGER) - (b.shirtNumber ?? Number.MAX_SAFE_INTEGER) ||
+          a.fullName.localeCompare(b.fullName),
+      );
+  }, [snapshot, players, position]);
 
   if (!snapshot) return null;
 
@@ -43,7 +47,33 @@ export function Draft({ socket }: Props) {
     });
   };
 
-  const teamFor = (id: string) => (id === homeTeam.id ? homeTeam : awayTeam);
+  const takenBy = new Map(snapshot.draft.picks.map((p) => [p.playerId, p.memberId]));
+
+  const lineup = (team: typeof homeTeam) => (
+    <section className="lineup">
+      <h2 className="lineup__head">{team.name}</h2>
+      {pool
+        .filter((player) => player.teamId === team.id)
+        .map((player) => {
+          const owner = takenBy.get(player.id);
+          const ownerName = owner
+            ? owner === myMemberId
+              ? 'You'
+              : (memberById(snapshot, owner)?.displayName ?? 'Someone')
+            : null;
+          return (
+            <PlayerCard
+              key={player.id}
+              player={player}
+              team={team}
+              disabled={!myTurn || Boolean(owner)}
+              onClick={myTurn && !owner ? () => pick(player.id) : undefined}
+              footer={ownerName ? `Taken by ${ownerName}` : undefined}
+            />
+          );
+        })}
+    </section>
+  );
 
   return (
     <main className="page">
@@ -77,28 +107,6 @@ export function Draft({ socket }: Props) {
       <div className="filters">
         <button
           type="button"
-          className={`chip ${teamId === 'ALL' ? 'is-on' : ''}`}
-          onClick={() => setTeamId('ALL')}
-        >
-          Both
-        </button>
-        <button
-          type="button"
-          className={`chip ${teamId === homeTeam.id ? 'is-on' : ''}`}
-          onClick={() => setTeamId(homeTeam.id)}
-        >
-          {homeTeam.shortName}
-        </button>
-        <button
-          type="button"
-          className={`chip ${teamId === awayTeam.id ? 'is-on' : ''}`}
-          onClick={() => setTeamId(awayTeam.id)}
-        >
-          {awayTeam.shortName}
-        </button>
-        <span className="filters__gap" />
-        <button
-          type="button"
           className={`chip ${position === 'ALL' ? 'is-on' : ''}`}
           onClick={() => setPosition('ALL')}
         >
@@ -116,16 +124,9 @@ export function Draft({ socket }: Props) {
         ))}
       </div>
 
-      <div className="player-grid">
-        {available.map((player) => (
-          <PlayerCard
-            key={player.id}
-            player={player}
-            team={teamFor(player.teamId)}
-            disabled={!myTurn}
-            onClick={myTurn ? () => pick(player.id) : undefined}
-          />
-        ))}
+      <div className="lineups">
+        {lineup(homeTeam)}
+        {lineup(awayTeam)}
       </div>
     </main>
   );
