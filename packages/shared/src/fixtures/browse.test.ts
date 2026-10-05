@@ -49,6 +49,7 @@ function fixture(comp: Competition, home: string, away: string, kickoffAt: strin
     kickoffAt,
     lineupsAnnounced: false,
     lineupsExpectedAt: expectedLineupRelease(kickoffAt),
+    simulated: false,
   };
 }
 

@@ -103,16 +103,20 @@ async function matchProgress(roomId: string, homeTeamId: string): Promise<MatchP
     .where(eq(matchEvents.roomId, roomId));
 
   const goals = await db
-    .select({ teamId: players.teamId, count: sql<number>`count(*)` })
+    .select({ teamId: players.teamId, type: matchEvents.type, count: sql<number>`count(*)` })
     .from(matchEvents)
     .innerJoin(players, eq(matchEvents.playerId, players.id))
-    .where(and(eq(matchEvents.roomId, roomId), eq(matchEvents.type, 'goal.scored')))
-    .groupBy(players.teamId);
+    .where(
+      and(eq(matchEvents.roomId, roomId), inArray(matchEvents.type, ['goal.scored', 'goal.own'])),
+    )
+    .groupBy(players.teamId, matchEvents.type);
 
   let homeGoals = 0;
   let awayGoals = 0;
   for (const row of goals) {
-    if (row.teamId === homeTeamId) homeGoals += Number(row.count);
+    // An own goal is charged to the scorer's team but counts for the other one.
+    const forHome = (row.teamId === homeTeamId) !== (row.type === 'goal.own');
+    if (forHome) homeGoals += Number(row.count);
     else awayGoals += Number(row.count);
   }
 

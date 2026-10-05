@@ -67,9 +67,17 @@ function MatchScore() {
   const snapshot = useRoomStore((s) => s.snapshot);
   if (!snapshot) return null;
 
-  const { homeTeam, awayTeam } = snapshot.fixture;
+  const { homeTeam, awayTeam, kickoffAt, simulated } = snapshot.fixture;
   const { minute, homeGoals, awayGoals, status } = snapshot.match;
-  const clock = status === 'half_time' ? 'HT' : status === 'finished' ? 'FT' : `${minute}'`;
+  const kickoff = new Date(kickoffAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const clock =
+    status === 'half_time'
+      ? 'HT'
+      : status === 'finished'
+        ? 'FT'
+        : status === 'scheduled' && !simulated
+          ? `KO ${kickoff}`
+          : `${minute}'`;
 
   return (
     <section className="border-t border-navy-700 p-4">
@@ -86,7 +94,9 @@ function MatchScore() {
         </div>
       </div>
       <p className="mt-3 text-center text-xs text-mist">
-        Simulated match · 90' in about {Math.round((snapshot.room.msPerMatchMinute * 90) / 60_000)} min
+        {simulated
+          ? `Simulated match · 90' in about ${Math.round((snapshot.room.msPerMatchMinute * 90) / 60_000)} min`
+          : 'Live match data · updates every minute or two'}
       </p>
     </section>
   );

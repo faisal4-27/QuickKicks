@@ -47,8 +47,12 @@ export function concededMinutesFor(
   teamRef: string,
 ): number[] {
   const goals = events
-    .filter((e) => e.type === 'goal.scored')
-    .map((e) => ({ minute: e.minute, teamRef: teams[e.playerRef] ?? '' }));
+    .filter((e) => e.type === 'goal.scored' || e.type === 'goal.own')
+    .map((e) => ({
+      minute: e.minute,
+      teamRef: teams[e.playerRef] ?? '',
+      ownGoal: e.type === 'goal.own',
+    }));
   return concededMinutes(goals, teamRef);
 }
 

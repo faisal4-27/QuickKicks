@@ -30,6 +30,32 @@ const schema = z.object({
     .enum(['true', 'false', '1', '0'])
     .default('false')
     .transform((v) => v === 'true' || v === '1'),
+  /**
+   * Where the host screen's fixtures come from. `api-football` syncs real fixtures and lineups;
+   * `mock` serves the seeded catalogue and simulates every match. Rooms already created keep
+   * whichever backend their fixture came from.
+   */
+  MATCH_DATA: z.enum(['api-football', 'mock']).default('api-football'),
+  API_FOOTBALL_KEY: z.string().default(''),
+  API_FOOTBALL_BASE_URL: z.string().url().default('https://v3.football.api-sports.io'),
+  /** League ids to offer, comma separated. Empty means the competitions in seed/competitions.json. */
+  API_FOOTBALL_LEAGUES: z
+    .string()
+    .default('')
+    .transform((v) =>
+      v
+        .split(',')
+        .map((id) => Number(id.trim()))
+        .filter((id) => Number.isInteger(id) && id > 0),
+    ),
+  /** Seconds between polls of a live match. One poll is one request, however many rooms watch it. */
+  API_FOOTBALL_LIVE_POLL_SECONDS: z.coerce.number().int().min(10).default(90),
+  /** Minutes between lineup checks for a fixture that has a lobby waiting on it. */
+  API_FOOTBALL_LINEUP_POLL_MINUTES: z.coerce.number().int().min(1).default(5),
+  /** Hours between fixture-list syncs. Each sync costs one request per day synced. */
+  API_FOOTBALL_FIXTURE_SYNC_HOURS: z.coerce.number().min(1).default(12),
+  /** Days synced per fixture-list sync, starting today (UTC). The free plan stops at tomorrow. */
+  API_FOOTBALL_SYNC_DAYS: z.coerce.number().int().min(1).max(14).default(2),
 });
 
 const parsed = schema.safeParse(process.env);

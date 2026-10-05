@@ -9,7 +9,7 @@ import {
   isScoringEvent,
   scoreEvent,
 } from '@quickkicks/shared';
-import { and, eq, gt, lte } from 'drizzle-orm';
+import { and, eq, gt, inArray, lte } from 'drizzle-orm';
 import { db } from '../../db/client.js';
 import { matchEvents, players, powerUps, rosterSlots, scoreEntries } from '../../db/schema.js';
 import { redis } from '../../redis/client.js';
@@ -48,8 +48,14 @@ export async function ingestEvent(
   event: MatchEvent,
 ): Promise<IngestResult> {
   const player = event.playerRef ? ctx.refIndex.get(event.playerRef) : undefined;
+  // An event's team is always the player's own, so an own goal counts for the other side.
+  const isHomeSide = event.teamRef === ctx.homeTeamRef;
   const goal =
-    event.type === 'goal.scored' ? (event.teamRef === ctx.homeTeamRef ? 'home' : 'away') : null;
+    event.type === 'goal.scored'
+      ? isHomeSide ? 'home' : 'away'
+      : event.type === 'goal.own'
+        ? isHomeSide ? 'away' : 'home'
+        : null;
 
   const ownerId = player
     ? event.type === 'clean_sheet.awarded'
@@ -162,10 +168,15 @@ async function cleanSheetOwner(
       .from(rosterSlots)
       .where(and(eq(rosterSlots.roomId, ctx.roomId), eq(rosterSlots.playerId, player.id))),
     db
-      .select({ minute: matchEvents.matchMinute, teamId: players.teamId })
+      .select({ minute: matchEvents.matchMinute, teamId: players.teamId, type: matchEvents.type })
       .from(matchEvents)
       .innerJoin(players, eq(matchEvents.playerId, players.id))
-      .where(and(eq(matchEvents.roomId, ctx.roomId), eq(matchEvents.type, 'goal.scored'))),
+      .where(
+        and(
+          eq(matchEvents.roomId, ctx.roomId),
+          inArray(matchEvents.type, ['goal.scored', 'goal.own']),
+        ),
+      ),
   ]);
 
   return cleanSheetClaimant({
@@ -178,7 +189,11 @@ async function cleanSheetOwner(
     })),
     playerRef: player.id,
     concededMinutes: concededMinutes(
-      goals.map((goal) => ({ minute: goal.minute, teamRef: goal.teamId })),
+      goals.map((goal) => ({
+        minute: goal.minute,
+        teamRef: goal.teamId,
+        ownGoal: goal.type === 'goal.own',
+      })),
       player.teamId,
     ),
     finalMinute,

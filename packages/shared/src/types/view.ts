@@ -50,6 +50,8 @@ export interface FixtureView {
    * until then — see `LINEUP_RELEASE_LEAD_MINUTES`.
    */
   lineupsExpectedAt: string;
+  /** True for the seeded catalogue, whose matches are simulated; false for real fixtures. */
+  simulated: boolean;
 }
 
 export interface MemberView {

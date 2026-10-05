@@ -1,19 +1,25 @@
 import { type OwnershipStint, ownerAt } from './ownership.js';
 import type { CleanSheetConfig } from './rules.js';
 
+export interface GoalRecord {
+  minute: number;
+  /** The team of the player the goal is recorded against: the scorer, or the own-goaler. */
+  teamRef: string;
+  ownGoal?: boolean;
+}
+
 /**
- * Minutes at which `teamRef` conceded, read off the goals the other side scored. A fixture has
- * exactly two teams, so every goal not scored by this team is one it let in.
+ * Minutes at which `teamRef` conceded. A fixture has exactly two teams, so every goal scored by
+ * the other side is one this team let in — and so is every own goal by one of its own players.
  *
  * This exists so the direction of that comparison is written down once: the live engine reads goals
  * out of Postgres and `replayLedger` reads them out of an event list, and the two must not be
  * allowed to disagree about which way round it goes.
  */
-export function concededMinutes(
-  goals: readonly { minute: number; teamRef: string }[],
-  teamRef: string,
-): number[] {
-  return goals.filter((goal) => goal.teamRef !== teamRef).map((goal) => goal.minute);
+export function concededMinutes(goals: readonly GoalRecord[], teamRef: string): number[] {
+  return goals
+    .filter((goal) => (goal.ownGoal ? goal.teamRef === teamRef : goal.teamRef !== teamRef))
+    .map((goal) => goal.minute);
 }
 
 export interface CleanSheetClaim {

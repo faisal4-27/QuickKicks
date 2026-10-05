@@ -11,6 +11,7 @@
     "sim": "tsx src/scripts/sim.ts",
     "e2e": "tsx src/scripts/e2e.ts",
     "lineups:announce": "tsx src/scripts/announceLineups.ts",
+    "fixtures:sync": "tsx src/scripts/syncFixtures.ts",
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {

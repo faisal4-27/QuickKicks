@@ -13,6 +13,11 @@ export const MATCH_EVENT_TYPES = [
   'shot.on_target',
   'shot.off_target',
   'goal.scored',
+  /**
+   * A goal put into his own net. The player is the one who conceded it, so it counts for the
+   * other side on the scoreboard and against his own side's clean sheet.
+   */
+  'goal.own',
   'assist',
   'save',
   'goal.conceded',
@@ -81,6 +86,7 @@ export const EVENT_LABELS: Record<MatchEventType, string> = {
   'shot.on_target': 'Shot on target',
   'shot.off_target': 'Shot off target',
   'goal.scored': 'Goal',
+  'goal.own': 'Own goal',
   assist: 'Assist',
   save: 'Save',
   'goal.conceded': 'Goal conceded',

@@ -4,6 +4,7 @@ import Fastify from 'fastify';
 import { closeDb } from './db/client.js';
 import { clearAllPickTimers } from './domain/draft/draftService.js';
 import { stopAllClocks } from './domain/clock/matchClock.js';
+import { startFixtureFeed, stopFixtureFeed } from './domain/fixture/fixtureFeed.js';
 import { rehydrateActiveRooms } from './domain/room/rehydrate.js';
 import { env } from './env.js';
 import { registerRoutes } from './http/routes.js';
@@ -12,6 +13,12 @@ import { closeRedis } from './redis/client.js';
 import { createGateway } from './ws/gateway.js';
 
 async function main(): Promise<void> {
+  if (env.MATCH_DATA === 'api-football' && !env.API_FOOTBALL_KEY) {
+    throw new Error(
+      'MATCH_DATA=api-football needs API_FOOTBALL_KEY in the repo-root .env (or set MATCH_DATA=mock).',
+    );
+  }
+
   const app = Fastify({ logger: { level: env.NODE_ENV === 'development' ? 'warn' : 'info' } });
 
   await app.register(cors, { origin: env.WEB_ORIGIN, credentials: true });
@@ -29,11 +36,14 @@ async function main(): Promise<void> {
   const resumed = await rehydrateActiveRooms();
   if (resumed > 0) console.log(`Resumed ${resumed} active room(s).`);
 
+  if (env.MATCH_DATA === 'api-football') startFixtureFeed();
+
   let shuttingDown = false;
   const shutdown = async (signal: string): Promise<void> => {
     if (shuttingDown) return;
     shuttingDown = true;
     console.log(`\n${signal} received, shutting down.`);
+    stopFixtureFeed();
     clearAllPickTimers();
     await stopAllClocks();
     await io.close();

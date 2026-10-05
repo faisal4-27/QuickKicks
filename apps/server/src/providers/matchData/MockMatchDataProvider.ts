@@ -142,6 +142,10 @@ export class MockMatchDataProvider implements DrivableMatchDataProvider {
           if (event.teamRef === this.lineup.home.teamRef) home += 1;
           else away += 1;
           break;
+        case 'goal.own':
+          if (event.teamRef === this.lineup.home.teamRef) away += 1;
+          else home += 1;
+          break;
         default: break;
       }
       line.minutesPlayed = Math.max(line.minutesPlayed, event.minute);

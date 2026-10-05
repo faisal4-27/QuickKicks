@@ -93,6 +93,8 @@ export const DEFAULT_SCORING_RULES: ScoringRules = {
     'shot.on_target': 50,
     'shot.off_target': 0,
     'goal.scored': { default: 180, FWD: 150, DEF: 210, GK: 240 },
+    // Recorded so the scoreboard and clean sheets see it; costing the player anything is a tuning call.
+    'goal.own': 0,
     // Rarer the further back you start: a keeper who registers one has done something absurd.
     assist: { default: 90, DEF: 120, GK: 150 },
     // Outfield players do not make saves. A real feed that says otherwise pays nothing for it.

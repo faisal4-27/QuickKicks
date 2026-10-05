@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cleanSheetClaimant } from './cleanSheet.js';
+import { cleanSheetClaimant, concededMinutes } from './cleanSheet.js';
 import type { OwnershipStint } from './ownership.js';
 import { DEFAULT_SCORING_RULES } from './rules.js';
 
@@ -87,5 +87,18 @@ describe('cleanSheetClaimant', () => {
 
   it('pays nobody for a player who was never drafted', () => {
     expect(claim([])).toBeNull();
+  });
+});
+
+describe('concededMinutes', () => {
+  it('counts goals by the other side and own goals by this side', () => {
+    const goals = [
+      { minute: 10, teamRef: 'liv' },
+      { minute: 20, teamRef: 'che' },
+      { minute: 30, teamRef: 'liv', ownGoal: true },
+      { minute: 40, teamRef: 'che', ownGoal: true },
+    ];
+    expect(concededMinutes(goals, 'liv')).toEqual([20, 30]);
+    expect(concededMinutes(goals, 'che')).toEqual([10, 40]);
   });
 });

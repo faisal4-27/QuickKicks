@@ -45,7 +45,7 @@ export interface MatchDataProvider {
  * A provider whose timeline we control. Simulations can be stepped; the real world cannot,
  * which is exactly why this is a separate interface rather than an optional method on every
  * provider. The room clock is the only timer in the system: it steps a drivable provider, and
- * for a real provider it would instead poll `getSnapshot` to learn the current minute.
+ * polls a `PollingMatchDataProvider` instead.
  */
 export interface DrivableMatchDataProvider extends MatchDataProvider {
   readonly finalMinute: number;
@@ -57,6 +57,21 @@ export function isDrivable(
   provider: MatchDataProvider,
 ): provider is DrivableMatchDataProvider {
   return typeof (provider as DrivableMatchDataProvider).advanceTo === 'function';
+}
+
+/**
+ * A provider that reports a match happening somewhere else. The room clock calls `poll` on its own
+ * schedule rather than stepping minutes; each call fetches the latest state, delivers every event
+ * not yet delivered to the subscriber, and returns where the match now stands. The minute comes
+ * from the snapshot, so it can jump several minutes between polls.
+ */
+export interface PollingMatchDataProvider extends MatchDataProvider {
+  readonly pollIntervalMs: number;
+  poll(matchId: string): Promise<MatchSnapshot>;
+}
+
+export function isPolling(provider: MatchDataProvider): provider is PollingMatchDataProvider {
+  return typeof (provider as PollingMatchDataProvider).poll === 'function';
 }
 
 export type { Lineup, MatchEvent, MatchSnapshot };

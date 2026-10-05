@@ -1,7 +1,9 @@
 import { expectedLineupRelease, type Competition, type FixtureView, type Team } from '@quickkicks/shared';
-import { and, asc, eq, gte, inArray, lt, sql } from 'drizzle-orm';
+import { and, asc, eq, gte, inArray, like, lt, not, sql } from 'drizzle-orm';
 import { db } from '../../db/client.js';
 import { competitions, fixtures, rooms, teams } from '../../db/schema.js';
+import { env } from '../../env.js';
+import { API_FIXTURE_REF_PREFIX, isApiFixtureRef } from '../../providers/apiFootball/refs.js';
 import { publishToRoom } from '../../redis/pubsub.js';
 import { type LineupEntry, saveFixtureLineup } from '../../seed/catalog.js';
 
@@ -60,6 +62,7 @@ export function fixtureView(
     // Once the XIs are actually out, show when they landed instead of when we guessed they would.
     lineupsExpectedAt:
       fixture.lineupsAnnouncedAt?.toISOString() ?? expectedLineupRelease(kickoffAt),
+    simulated: !isApiFixtureRef(fixture.externalRef),
   };
 }
 
@@ -91,13 +94,18 @@ async function viewsFor(rows: FixtureRow[]): Promise<FixtureView[]> {
  * books: a real provider carries every competition it covers, and the host screen only draws a
  * handful of days. The client folds this flat list into day/country/competition sections with
  * `groupFixturesByDay`, so ordering here only has to be stable.
+ *
+ * Only fixtures from the configured `MATCH_DATA` source are offered, so a database that was once
+ * seeded with the mock catalogue does not mix fake fixtures in with real ones.
  */
 export async function listOpenFixtures(): Promise<FixtureView[]> {
+  const fromApi = like(fixtures.externalRef, `${API_FIXTURE_REF_PREFIX}%`);
   const rows = await db
     .select()
     .from(fixtures)
     .where(
       and(
+        env.MATCH_DATA === 'api-football' ? fromApi : not(fromApi),
         eq(fixtures.status, 'scheduled'),
         gte(fixtures.kickoffAt, sql`now() - ${`${WINDOW_BEHIND_HOURS} hours`}::interval`),
         lt(fixtures.kickoffAt, sql`now() + ${`${WINDOW_AHEAD_DAYS} days`}::interval`),
@@ -114,8 +122,8 @@ export async function getFixtureView(fixtureId: string): Promise<FixtureView | n
 }
 
 /**
- * Records a fixture's starting XIs and tells every lobby waiting on it. This is the seam a real
- * provider's lineup poller calls; locally it is driven by `npm run lineups:announce`.
+ * Records a fixture's starting XIs and tells every lobby waiting on it. The API-Football lineup
+ * poller (`fixtureFeed.ts`) calls it for real fixtures; `npm run lineups:announce` drives it by hand.
  *
  * Rooms are not re-primed here: `startDraft` builds the pool from the lineup at the moment the
  * host starts, which also covers a lineup revised between announcement and draft.

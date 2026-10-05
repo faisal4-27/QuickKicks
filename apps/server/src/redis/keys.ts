@@ -21,6 +21,13 @@ export const keys = {
   channel: (roomId: string) => `room:${roomId}`,
   /** Set of room ids whose clock should be running, so a restart knows what to resume. */
   liveRooms: () => 'rooms:live',
+  /**
+   * String: a cached API-Football response. Shared by every room on a fixture and across
+   * restarts, so neither multiplies requests against the daily quota.
+   */
+  feedCache: (request: string) => `feed:apifootball:cache:${request}`,
+  /** String with a TTL: present while a periodic feed job is not yet due again. */
+  feedThrottle: (job: string) => `feed:apifootball:throttle:${job}`,
 } as const;
 
 export const ROOM_STATE_FIELDS = {

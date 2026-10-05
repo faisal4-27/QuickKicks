@@ -25,6 +25,7 @@
     "sim": "npm run sim --workspace @quickkicks/server --",
     "e2e": "npm run e2e --workspace @quickkicks/server --",
     "lineups:announce": "npm run lineups:announce --workspace @quickkicks/server --",
+    "fixtures:sync": "npm run fixtures:sync --workspace @quickkicks/server --",
     "test": "vitest run",
     "typecheck": "npm run typecheck --workspaces --if-present"
   },

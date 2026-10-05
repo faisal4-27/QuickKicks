@@ -190,7 +190,9 @@ async function main(): Promise<void> {
   check('fixtures are listed for the host to pick from', fixtureList.status === 200 && fixtures.length > 0,
     JSON.stringify(fixtureList.body));
   const fixture = fixtures.find((f) => f.lineupsAnnounced);
-  if (!fixture) throw new Error('No fixture has announced lineups. Run `npm run seed`.');
+  if (!fixture) {
+    throw new Error('No fixture has announced lineups. Run the server with MATCH_DATA=mock after `npm run seed`.');
+  }
 
   const noFixture = await api(options, '/api/rooms', { method: 'POST', body: {}, cookie: bases[0]!.cookie });
   check('creating a room without picking a match is a 400', noFixture.status === 400, `got ${noFixture.status}`);
